@@ -1,10 +1,10 @@
-GitHub Public Links for HTML Files:
+GitHub Pages Links (Live HTML):
 
 1. MUSIC THUMBNAIL GEN.html
-   https://github.com/some-dude-999/YTC/blob/main/MUSIC%20THUMBNAIL%20GEN.html
+   https://some-dude-999.github.io/YTC/MUSIC%20THUMBNAIL%20GEN.html
 
 2. MUSIC WAVE DUPLICATE CHECKER.html
-   https://github.com/some-dude-999/YTC/blob/main/MUSIC%20WAVE%20DUPLICATE%20CHECKER.html
+   https://some-dude-999.github.io/YTC/MUSIC%20WAVE%20DUPLICATE%20CHECKER.html
 
 3. thumbnail-extractor.html
-   https://github.com/some-dude-999/YTC/blob/main/thumbnail-extractor.html
+   https://some-dude-999.github.io/YTC/thumbnail-extractor.html
