@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Thumbnail Creator with Text</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls-section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+        }
+        .dropdown {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+        .drop-zone {
+            border: 3px dashed #666;
+            border-radius: 10px;
+            padding: 60px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .drop-zone:hover {
+            border-color: #ff0000;
+            background: rgba(255,0,0,0.1);
+        }
+        .drop-zone.drag-over {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.1);
+        }
+        .previews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .favorites-section {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .favorites-header {
+            font-size: 24px;
+            font-weight: bold;
+            color: gold;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid gold;
+        }
+        .preview-card {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .preview-card.favorite-slot {
+            background: linear-gradient(135deg, #3a2a1a 0%, #2a2a2a 100%);
+            border: 1px solid gold;
+        }
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            margin-bottom: 10px;
+            cursor: move;
+            border: 2px solid #444;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #000;
+        }
+        .canvas-wrapper.focused {
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        .canvas-wrapper canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .font-name {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .star-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s;
+        }
+        .star-btn:hover {
+            transform: scale(1.2);
+        }
+        .star-btn.favorited {
+            filter: drop-shadow(0 0 3px gold);
+        }
+        .controls-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn-download {
+            background: #00aa00;
+            color: white;
+            flex: 1;
+        }
+        .btn-toggle {
+            background: #666;
+            color: white;
+            padding: 6px 10px;
+        }
+        .btn-toggle.active {
+            background: #ff0000;
+        }
+        .slider-group {
+            flex: 1;
+            min-width: 120px;
+        }
+        .slider-group label {
+            display: block;
+            font-size: 10px;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+        .slider {
+            width: 100%;
+        }
+        .upload-btn {
+            background: #ff0000;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .upload-btn:hover {
+            background: #cc0000;
+        }
+        #fileInput {
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YouTube Thumbnail Creator</h1>
+            <p style="color: #aaa; margin-top: 10px;">Create thumbnails with custom text in multiple fonts</p>
+            <p style="color: #0f0; margin-top: 5px; font-size: 12px;">💡 Click preview + arrow keys for 1px positioning | "Relink All" resets customizations to master</p>
+        </div>
+        <div class="controls-section">
+            <div class="input-group">
+                <label>Text to Display</label>
+                <input 
+                    type="text" 
+                    class="text-input"
+                    id="textInput"
+                    value="YOUR TEXT HERE"
+                    placeholder="Enter your text here..."
+                />
+            </div>
+            <div class="input-group">
+                <label>Font Style</label>
+                <select class="dropdown" id="categorySelect">
+                    <option value="all">All Fonts - Every Font Available</option>
+                    <option value="bold">Bold - Heavy & Impact</option>
+                    <option value="futuristic">Futuristic - EDM/Electronic</option>
+                    <option value="modern">Modern - Clean & Versatile</option>
+                    <option value="clean">Clean - Minimalist</option>
+                    <option value="condensed">Condensed - Long Titles</option>
+                    <option value="display">Display - Eye-Catching</option>
+                    <option value="elegant">Elegant - Classical/Jazz</option>
+                    <option value="script">Script - Chill/Lo-fi</option>
+                    <option value="retro">Retro - 80s/Synthwave</option>
+                    <option value="hiphop">Hip-Hop - Rap/Urban</option>
+                    <option value="minimal">Minimal - Clean Aesthetic</option>
+                    <option value="corporate">Corporate - Professional</option>
+                    <option value="grunge">Grunge - Rock/Edgy</option>
+                    <option value="rounded">Rounded - Friendly/Soft</option>
+                    <option value="techno">Techno - Electronic/Tech</option>
+                    <option value="halloween">🎃 Halloween - Spooky/Horror</option>
+                    <option value="christmas">🎄 Christmas - Festive/Holiday</option>
+                    <option value="synthwave">🌆 Synthwave - Retro Futurism</option>
+                    <option value="space">🚀 Space - Sci-Fi/Star Trek</option>
+                    <option value="medieval">⚔️ Medieval - Fantasy/Gothic</option>
+                    <option value="pirate">🏴‍☠️ Pirate - Nautical/Treasure</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Global Text Effects</label>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="textEffect" value="shadow" id="globalShadow" checked style="cursor: pointer;">
+                        <span>Drop Shadow</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="textEffect" value="glow" id="globalGlow" style="cursor: pointer;">
+                        <span>Glow Effect</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="textEffect" value="none" id="globalNone" style="cursor: pointer;">
+                        <span>No Effect</span>
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="textColor" value="white" id="colorWhite" checked style="cursor: pointer;">
+                        <span>White Text</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="textColor" value="black" id="colorBlack" style="cursor: pointer;">
+                        <span>Black Text</span>
+                    </label>
+                </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px;">Text Transformation:</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="textTransform" value="none" id="transformNone" checked style="cursor: pointer;">
+                            <span>None</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="textTransform" value="uppercase" id="transformUpper" style="cursor: pointer;">
+                            <span>UPPERCASE</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="textTransform" value="lowercase" id="transformLower" style="cursor: pointer;">
+                            <span>lowercase</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="textTransform" value="titlecase" id="transformTitle" style="cursor: pointer;">
+                            <span>Title Case</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div id="dropZoneContainer">
+                <div class="drop-zone" id="dropZone">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📷</div>
+                    <div style="font-size: 20px;">Drop image here or click to upload</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 10px;">
+                        Will be rendered at 1280x720
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="upload-btn hidden" id="changeImageBtn">Change Image</button>
+                <button class="upload-btn hidden" id="resetBtn" style="background: #666;">Reset All</button>
+                <button class="upload-btn hidden" id="relinkBtn" style="background: #0088ff;">Relink All to Master</button>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div id="favoritesSection" class="favorites-section" style="display: none;">
+            <div class="favorites-header">⭐ FAVORITES ⭐</div>
+            <div class="favorites-grid" id="favoritesGrid"></div>
+        </div>
+        <div class="previews-grid" id="previewsGrid"></div>
+        
+        <div style="text-align: center; margin: 30px 0; display: none;" id="showMoreContainer">
+            <button class="upload-btn" id="showMoreBtn" style="background: #0088ff; padding: 15px 40px; font-size: 16px;">
+                Show More Fonts (40 more)
+            </button>
+            <p style="color: #aaa; margin-top: 10px; font-size: 14px;" id="fontCounter"></p>
+        </div>
+    </div>
+    <script>
+        const FONT_CATEGORIES = {
+            bold: [
+                // Perfect for music thumbnails - bold & impactful (10/10 to 8/10)
+                // Collections: bold
+                'Bebas Neue', 'Anton', 'Archivo Black', 'Oswald', 'Kanit',
+                'Barlow Condensed', 'Alfa Slab One', 'Righteous', 'Russo One', 'Passion One',
+                'Black Ops One', 'Ultra', 'Teko', 'Saira Condensed', 'Staatliches',
+                'Squada One', 'Pathway Gothic One', 'Bangers', 'Londrina Solid', 'Bungee'
+            ],
+            futuristic: [
+                // Electronic/EDM music style (9/10 to 7/10)
+                // Collections: futuristic
+                'Orbitron', 'Exo 2', 'Audiowide', 'Electrolize', 'Rajdhani',
+                'Michroma', 'Syncopate', 'Saira', 'Chakra Petch', 'Oxanium',
+                'Share Tech', 'Quantico', 'Aldrich', 'Strait', 'Iceberg',
+                'Changa', 'Jura', 'Syne', 'Advent Pro', 'Zilla Slab'
+            ],
+            modern: [
+                // Clean & versatile for all music genres (9/10 to 7/10)
+                // Collections: modern
+                'Montserrat', 'Poppins', 'Roboto', 'Raleway', 'Lato',
+                'Nunito', 'Open Sans', 'Ubuntu', 'Work Sans', 'PT Sans',
+                'Barlow', 'Quicksand', 'Karla', 'Inter', 'DM Sans',
+                'Manrope', 'Outfit', 'Sora', 'Lexend', 'Red Hat Display'
+            ],
+            clean: [
+                // Minimalist music thumbnails (8/10 to 6/10)
+                // Collections: clean
+                'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway',
+                'Poppins', 'Nunito', 'PT Sans', 'Ubuntu', 'Work Sans',
+                'Barlow', 'Karla', 'Inter', 'Quicksand', 'Cabin',
+                'Catamaran', 'Hind', 'Fira Sans', 'Oxygen', 'Noto Sans'
+            ],
+            condensed: [
+                // Great for fitting long song titles (9/10 to 7/10)
+                // Collections: condensed
+                'Oswald', 'Bebas Neue', 'Barlow Condensed', 'Roboto Condensed', 'Anton',
+                'Pathway Gothic One', 'Saira Condensed', 'Fjalla One', 'PT Sans Narrow', 'Yanone Kaffeesatz',
+                'Abel', 'Economica', 'Armata', 'Cuprum', 'News Cycle',
+                'Ruda', 'Francois One', 'Telex', 'Gudea', 'Oxygen'
+            ],
+            display: [
+                // Eye-catching for special genres (8/10 to 5/10)
+                // Collections: display, some also in: pirate, halloween, medieval
+                'Righteous', 'Lobster', 'Abril Fatface', 'Fredoka One', 'Pacifico',
+                'Alfa Slab One', 'Bungee', 'Monoton', 'Shrikhand', 'Ultra',
+                'Titan One', 'Lilita One', 'Patua One', 'Bree Serif', 'Crete Round',
+                'Arvo', 'Bitter', 'Secular One', 'Slabo 27px', 'Zilla Slab'
+            ],
+            elegant: [
+                // Classical/Jazz music (6/10 to 4/10)
+                // Collections: elegant, some also in: medieval, corporate
+                'Playfair Display', 'Lora', 'Merriweather', 'Libre Baskerville', 'Cormorant Garamond',
+                'Crimson Text', 'EB Garamond', 'Vollkorn', 'Cardo', 'Spectral',
+                'Cinzel', // Also in: medieval
+                'Neuton', 'Quattrocento', 'Alegreya', 'Gentium Book Basic',
+                'Arapey', 'Vidaloka', 'Cambo', 'Fanwood Text', 'Ovo'
+            ],
+            script: [
+                // Chill/Lo-fi music (7/10 to 4/10)
+                // Collections: script, some also in: christmas, rounded
+                'Pacifico', 'Dancing Script', 'Great Vibes', 'Satisfy', 'Kaushan Script',
+                'Allura', 'Sacramento', 'Tangerine', 'Courgette', 'Cookie',
+                'Shadows Into Light', 'Caveat', 'Amatic SC', 'Indie Flower', 'Permanent Marker',
+                'Patrick Hand', 'Handlee', 'Architects Daughter', 'Kalam', 'Sedgwick Ave'
+            ],
+            retro: [
+                // 80s/Synthwave/Vaporwave (9/10 to 6/10)
+                // Collections: retro, some also in: synthwave, halloween, pirate
+                'Righteous', 'Alfa Slab One', 'Bungee', 'Fredoka One', 'Lobster',
+                'Passion One', 'Russo One', 'Ultra', 'Monoton', 'Press Start 2P',
+                'VT323', 'Audiowide', 'Orbitron', 'Black Ops One', 'Faster One',
+                'Turret Road', 'Rammetto One', 'Ewert', 'Eater', 'Creepster'
+            ],
+            hiphop: [
+                // Hip-Hop/Rap style
+                // Collections: hiphop
+                'Bebas Neue', 'Anton', 'Oswald', 'Righteous', 'Alfa Slab One',
+                'Black Ops One', 'Bungee', 'Monoton', 'Passion One', 'Russo One',
+                'Ultra', 'Titan One', 'Londrina Solid', 'Bangers', 'Staatliches',
+                'Squada One', 'Rammetto One', 'Lilita One', 'Audiowide', 'Orbitron'
+            ],
+            minimal: [
+                // Minimal/Clean aesthetic
+                // Collections: minimal
+                'Roboto', 'Raleway', 'Lato', 'Montserrat', 'Open Sans',
+                'Work Sans', 'Inter', 'Karla', 'Quicksand', 'Nunito',
+                'PT Sans', 'Ubuntu', 'Cabin', 'Oxygen', 'Hind',
+                'Catamaran', 'Fira Sans', 'Noto Sans', 'Barlow', 'DM Sans'
+            ],
+            corporate: [
+                // Professional/Corporate
+                // Collections: corporate, some also in: elegant
+                'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway',
+                'PT Sans', 'Work Sans', 'Ubuntu', 'Nunito', 'Libre Baskerville',
+                'Merriweather', 'Lora', 'Arvo', 'Bitter', 'Crimson Text',
+                'Playfair Display', 'Karla', 'Inter', 'Barlow', 'Cabin'
+            ],
+            grunge: [
+                // Grunge/Rock style
+                // Collections: grunge, some also in: halloween, pirate
+                'Black Ops One', 'Audiowide', 'Monoton', 'Creepster', 'Eater',
+                'Ewert', 'Press Start 2P', 'VT323', 'Rammetto One', 'Faster One',
+                'Permanent Marker', 'Indie Flower', 'Shadows Into Light', 'Bangers', 'Ultra',
+                'Righteous', 'Russo One', 'Passion One', 'Bungee', 'Fredoka One'
+            ],
+            rounded: [
+                // Rounded/Friendly
+                // Collections: rounded, some also in: script
+                'Quicksand', 'Nunito', 'Comfortaa', 'Fredoka One', 'Varela Round',
+                'Rubik', 'Baloo 2', 'Livvic', 'Sniglet', 'M PLUS Rounded 1c',
+                'Mali', 'Itim', 'Chilanka', 'Pangolin', 'Patrick Hand',
+                'Handlee', 'Architects Daughter', 'Cookie', 'Courgette', 'Satisfy'
+            ],
+            techno: [
+                // Techno/Electronic
+                // Collections: techno, some also in: futuristic, space, synthwave
+                'Orbitron', 'Exo 2', 'Audiowide', 'Electrolize', 'Michroma',
+                'Rajdhani', 'Syncopate', 'Oxanium', 'Share Tech', 'Quantico',
+                'Aldrich', 'Chakra Petch', 'Saira', 'Iceberg', 'Strait',
+                'Monoton', 'VT323', 'Press Start 2P', 'Faster One', 'Turret Road'
+            ],
+            halloween: [
+                // Halloween/Horror/Spooky
+                // Collections: halloween, some also in: pirate, grunge, retro, medieval
+                'Creepster', // Also in: grunge, retro
+                'Eater', // Also in: grunge, retro, pirate
+                'Nosifer', // Also in: pirate
+                'Butcherman', // Also in: pirate
+                'Metal Mania', // Also in: pirate
+                'Jolly Lodger', // Also in: pirate
+                'Rubik Wet Paint', 'Rye', // Also in: pirate, retro
+                'Henny Penny', 'Mystery Quest',
+                'Ewert', 'Finger Paint', 'Vampiro One', 'New Rocker', // Also in: medieval, grunge
+                'Averia Gruesa Libre', // Also in: pirate, grunge
+                'Black Ops One', 'Monoton', 'Fredericka the Great', // Also in: medieval
+                'Abril Fatface', 'Ultra'
+            ],
+            christmas: [
+                // Christmas/Holiday/Festive
+                // Collections: christmas, some also in: script
+                'Mountains of Christmas', 'Berkshire Swash', 'Lobster', 'Great Vibes', 'Cookie',
+                'Dancing Script', 'Sacramento', 'Allura', 'Pacifico', 'Satisfy',
+                'Kaushan Script', 'Courgette', 'Playball', 'Mr Dafoe', 'Tangerine',
+                'Yellowtail', 'Alex Brush', 'Grand Hotel', 'Petit Formal Script', 'Niconne'
+            ],
+            synthwave: [
+                // Synthwave/Retro Futurism/80s
+                // Collections: synthwave, some also in: retro, techno, space
+                'Audiowide', 'Orbitron', 'Righteous', 'Monoton', 'Russo One',
+                'Bungee', 'Press Start 2P', 'VT323', 'Electrolize', 'Syncopate',
+                'Faster One', 'Turret Road', 'Rammetto One', 'Alfa Slab One', 'Ultra',
+                'Passion One', 'Michroma', 'Exo 2', 'Iceberg', 'Black Ops One'
+            ],
+            space: [
+                // Space/Sci-Fi/Star Trek/Star Wars
+                // Collections: space, some also in: futuristic, techno
+                'Orbitron', 'Audiowide', 'Exo 2', 'Electrolize', 'Michroma',
+                'Rajdhani', 'Saira', 'Aldrich', 'Quantico', 'Oxanium',
+                'Share Tech', 'Syncopate', 'Chakra Petch', 'Strait', 'Jura',
+                'Iceberg', 'Group', 'Advent Pro', 'Syne', 'Changa'
+            ],
+            medieval: [
+                // Medieval/Gothic/Fantasy
+                // Collections: medieval, some also in: elegant, halloween
+                'Cinzel', // Also in: elegant
+                'UnifrakturMaguntia', // Medieval only
+                'MedievalSharp', // Medieval only
+                'IM Fell English', // Medieval only
+                'Almendra', // Medieval only
+                'Pirata One', // Also in: pirate, halloween, display
+                'New Rocker', // Also in: halloween, grunge
+                'Fredericka the Great', // Also in: halloween
+                'Uncial Antiqua', // Medieval only
+                'Lovers Quarrel', // Medieval only
+                'Metamorphous', // Medieval only
+                'Trochut', // Medieval only
+                'Cinzel Decorative', // Medieval only
+                'IM Fell DW Pica', // Medieval only
+                'IM Fell French Canon', // Medieval only
+                'Enriqueta', // Medieval only
+                'Marcellus', // Medieval only
+                'Caudex', // Medieval only
+                'Fondamento', // Medieval only
+                'Judson' // Medieval only
+            ],
+            pirate: [
+                // Pirate/Nautical/Treasure
+                // Collections: pirate, some also in: medieval, halloween, grunge
+                'Pirata One', // Also in: medieval, halloween, display
+                'Rye', // Also in: halloween, retro
+                'Jolly Lodger', // Also in: halloween
+                'Rum Raisin', // Pirate only
+                'Smokum', // Pirate only
+                'Eater', // Also in: halloween, grunge
+                'Metal Mania', // Also in: halloween, grunge
+                'Nosifer', // Also in: halloween
+                'Butcherman', // Also in: halloween
+                'Averia Gruesa Libre', // Also in: halloween, grunge
+                'Bungee Shade', // Pirate only
+                'Geostar Fill', // Pirate only
+                'Sevillana', // Pirate only
+                'Trade Winds', // Pirate only
+                'Emblema One', // Pirate only
+                'Macondo', // Pirate only
+                'Macondo Swash Caps', // Pirate only
+                'Overlock', // Pirate only
+                'Bowlby One', // Pirate only
+                'Bowlby One SC' // Pirate only
+            ]
+        };
+        // Generate "all" category with all unique fonts
+        FONT_CATEGORIES.all = [...new Set(Object.values(FONT_CATEGORIES).flat())];
+        // Resolution constants
+        const FULL_WIDTH = 1280;
+        const FULL_HEIGHT = 720;
+        const PREVIEW_WIDTH = 640;
+        const PREVIEW_HEIGHT = 360;
+        let currentImage = null;
+        let currentCategory = 'all';
+        let previews = [];
+        let favorites = new Set(); // Track favorited fonts
+        let fontCustomizations = {}; // Track customizations per font name
+        let focusedCanvas = null; // Track which canvas is focused for keyboard control
+        let focusedPreview = null; // Track which preview object is focused
+        let displayLimit = 40; // Number of fonts to display at once
+        let totalFontsToShow = 0; // Total fonts available for current category
+        
+        // Global settings
+        let globalSettings = {
+            effect: 'shadow', // 'shadow', 'glow', or 'none'
+            textColor: 'white',
+            textTransform: 'none'
+        };
+        // Master template settings (from Arial mockup)
+        let masterTemplate = {
+            fontSize: 80,
+            letterSpacing: 0,
+            textX: 0.5,
+            textY: 0.5
+        };
+        // Load fonts
+        function loadGoogleFonts() {
+            const allFonts = Object.values(FONT_CATEGORIES).flat();
+            const link = document.createElement('link');
+            link.href = `https://fonts.googleapis.com/css2?${allFonts.map(f => `family=${f.replace(/ /g, '+')}`).join('&')}&display=swap`;
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+        }
+        loadGoogleFonts();
+        function applyTextTransform(text, transform) {
+            if (!text) return text;
+            
+            switch(transform) {
+                case 'uppercase':
+                    return text.toUpperCase();
+                case 'lowercase':
+                    return text.toLowerCase();
+                case 'titlecase':
+                    return text.replace(/\w\S*/g, (txt) => {
+                        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                    });
+                default:
+                    return text;
+            }
+        }
+        // Elements
+        const textInput = document.getElementById('textInput');
+        const categorySelect = document.getElementById('categorySelect');
+        const dropZone = document.getElementById('dropZone');
+        const dropZoneContainer = document.getElementById('dropZoneContainer');
+        const changeImageBtn = document.getElementById('changeImageBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const relinkBtn = document.getElementById('relinkBtn');
+        const fileInput = document.getElementById('fileInput');
+        const previewsGrid = document.getElementById('previewsGrid');
+        const favoritesSection = document.getElementById('favoritesSection');
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const showMoreContainer = document.getElementById('showMoreContainer');
+        const showMoreBtn = document.getElementById('showMoreBtn');
+        const fontCounter = document.getElementById('fontCounter');
+        const globalShadow = document.getElementById('globalShadow');
+        const globalGlow = document.getElementById('globalGlow');
+        const globalNone = document.getElementById('globalNone');
+        const colorWhite = document.getElementById('colorWhite');
+        const colorBlack = document.getElementById('colorBlack');
+        const transformNone = document.getElementById('transformNone');
+        const transformUpper = document.getElementById('transformUpper');
+        const transformLower = document.getElementById('transformLower');
+        const transformTitle = document.getElementById('transformTitle');
+        // Event listeners
+        textInput.addEventListener('keyup', updateAllPreviews);
+        categorySelect.addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            if (currentImage) {
+                // Clear focus when changing category
+                focusedCanvas = null;
+                focusedPreview = null;
+                // Reset pagination
+                displayLimit = 40;
+                generatePreviews();
+            }
+        });
+        showMoreBtn.addEventListener('click', () => {
+            displayLimit += 40;
+            generatePreviews();
+        });
+        globalShadow.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                globalSettings.effect = 'shadow';
+                updateAllPreviews();
+            }
+        });
+        globalGlow.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                globalSettings.effect = 'glow';
+                updateAllPreviews();
+            }
+        });
+        globalNone.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                globalSettings.effect = 'none';
+                updateAllPreviews();
+            }
+        });
+        colorWhite.addEventListener('change', () => {
+            globalSettings.textColor = 'white';
+            updateAllPreviews();
+        });
+        colorBlack.addEventListener('change', () => {
+            globalSettings.textColor = 'black';
+            updateAllPreviews();
+        });
+        transformNone.addEventListener('change', () => {
+            globalSettings.textTransform = 'none';
+            updateAllPreviews();
+        });
+        transformUpper.addEventListener('change', () => {
+            globalSettings.textTransform = 'uppercase';
+            updateAllPreviews();
+        });
+        transformLower.addEventListener('change', () => {
+            globalSettings.textTransform = 'lowercase';
+            updateAllPreviews();
+        });
+        transformTitle.addEventListener('change', () => {
+            globalSettings.textTransform = 'titlecase';
+            updateAllPreviews();
+        });
+        // Keyboard controls for fine-tuning
+        let keyboardMovedMaster = false; // Track if master was moved during keydown
+        
+        document.addEventListener('keydown', (e) => {
+            if (!focusedCanvas || !focusedPreview) return;
+            
+            const moveAmount = 1 / FULL_WIDTH; // 1px movement in normalized coordinates
+            let moved = false;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    focusedPreview.textX = Math.max(0, focusedPreview.textX - moveAmount);
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    focusedPreview.textX = Math.min(1, focusedPreview.textX + moveAmount);
+                    moved = true;
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    focusedPreview.textY = Math.max(0, focusedPreview.textY - moveAmount);
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    focusedPreview.textY = Math.min(1, focusedPreview.textY + moveAmount);
+                    moved = true;
+                    break;
+            }
+            
+            if (moved) {
+                if (focusedPreview.isMaster) {
+                    masterTemplate.textX = focusedPreview.textX;
+                    masterTemplate.textY = focusedPreview.textY;
+                    // Only update master canvas during keydown
+                    drawCanvas(focusedCanvas, focusedPreview);
+                    keyboardMovedMaster = true;
+                } else {
+                    // Update font customization
+                    if (!fontCustomizations[focusedPreview.font]) {
+                        fontCustomizations[focusedPreview.font] = {
+                            fontSize: focusedPreview.fontSize,
+                            letterSpacing: focusedPreview.letterSpacing,
+                            textX: focusedPreview.textX,
+                            textY: focusedPreview.textY
+                        };
+                    }
+                    fontCustomizations[focusedPreview.font].textX = focusedPreview.textX;
+                    fontCustomizations[focusedPreview.font].textY = focusedPreview.textY;
+                    drawCanvas(focusedCanvas, focusedPreview);
+                    updateLinkedFont(focusedPreview.font);
+                }
+            }
+        });
+        
+        // Update all non-customized previews on key release for master
+        document.addEventListener('keyup', (e) => {
+            if (keyboardMovedMaster && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                updateNonCustomizedPreviews();
+                keyboardMovedMaster = false;
+            }
+        });
+        // Click outside to unfocus
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.canvas-wrapper') && focusedCanvas) {
+                focusedCanvas.parentElement.classList.remove('focused');
+                focusedCanvas = null;
+                focusedPreview = null;
+            }
+        });
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            handleImageUpload(file);
+        });
+        fileInput.addEventListener('change', (e) => {
+            handleImageUpload(e.target.files[0]);
+        });
+        changeImageBtn.addEventListener('click', () => {
+            currentImage = null;
+            previews = [];
+            fontCustomizations = {};
+            focusedCanvas = null;
+            focusedPreview = null;
+            previewsGrid.innerHTML = '';
+            favoritesGrid.innerHTML = '';
+            favoritesSection.style.display = 'none';
+            dropZoneContainer.classList.remove('hidden');
+            changeImageBtn.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+            relinkBtn.classList.add('hidden');
+        });
+        resetBtn.addEventListener('click', () => {
+            // Reset everything
+            currentImage = null;
+            previews = [];
+            favorites.clear();
+            fontCustomizations = {};
+            focusedCanvas = null;
+            focusedPreview = null;
+            previewsGrid.innerHTML = '';
+            favoritesGrid.innerHTML = '';
+            favoritesSection.style.display = 'none';
+            dropZoneContainer.classList.remove('hidden');
+            changeImageBtn.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+            relinkBtn.classList.add('hidden');
+            textInput.value = '';
+            categorySelect.value = 'all';
+            currentCategory = 'all';
+            globalShadow.checked = true;
+            globalGlow.checked = false;
+            globalNone.checked = false;
+            colorWhite.checked = true;
+            transformNone.checked = true;
+            globalSettings = {
+                effect: 'shadow',
+                textColor: 'white',
+                textTransform: 'none'
+            };
+            masterTemplate = {
+                fontSize: 80,
+                letterSpacing: 0,
+                textX: 0.5,
+                textY: 0.5
+            };
+        });
+        relinkBtn.addEventListener('click', () => {
+            // Clear all font customizations
+            fontCustomizations = {};
+            focusedCanvas = null;
+            focusedPreview = null;
+            
+            // Regenerate all previews to use master template
+            if (currentImage) {
+                generatePreviews();
+            }
+        });
+        function handleImageUpload(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        currentImage = img;
+                        dropZoneContainer.classList.add('hidden');
+                        changeImageBtn.classList.remove('hidden');
+                        resetBtn.classList.remove('hidden');
+                        relinkBtn.classList.remove('hidden');
+                        generatePreviews();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function generatePreviews() {
+            const allFonts = FONT_CATEGORIES.all;
+            const categoryFonts = FONT_CATEGORIES[currentCategory];
+            
+            // Sort fonts: category fonts first, then others
+            let sortedFonts;
+            if (currentCategory === 'all') {
+                sortedFonts = allFonts;
+            } else {
+                const categorySet = new Set(categoryFonts);
+                const inCategory = allFonts.filter(f => categorySet.has(f));
+                const notInCategory = allFonts.filter(f => !categorySet.has(f));
+                sortedFonts = [...inCategory, ...notInCategory];
+            }
+            
+            // Create Arial master mockup first
+            previews = [{
+                font: 'Arial',
+                isMaster: true,
+                fontSize: masterTemplate.fontSize,
+                letterSpacing: masterTemplate.letterSpacing,
+                textX: masterTemplate.textX,
+                textY: masterTemplate.textY
+            }];
+            // Add all fonts
+            previews = previews.concat(sortedFonts.map(font => {
+                // Get customization or use defaults
+                const custom = fontCustomizations[font];
+                if (custom) {
+                    return {
+                        font: font,
+                        isMaster: false,
+                        fontSize: custom.fontSize,
+                        letterSpacing: custom.letterSpacing,
+                        textX: custom.textX,
+                        textY: custom.textY
+                    };
+                } else {
+                    return {
+                        font: font,
+                        isMaster: false,
+                        fontSize: masterTemplate.fontSize,
+                        letterSpacing: masterTemplate.letterSpacing,
+                        textX: masterTemplate.textX,
+                        textY: masterTemplate.textY
+                    };
+                }
+            }));
+            renderPreviews();
+            renderFavorites();
+        }
+        function renderFavorites() {
+            const allFonts = FONT_CATEGORIES.all;
+            const favoritedFonts = allFonts.filter(font => favorites.has(font));
+            
+            if (favoritedFonts.length > 0) {
+                favoritesSection.style.display = 'block';
+                favoritesGrid.innerHTML = '';
+                
+                favoritedFonts.forEach(font => {
+                    // Get customization or use defaults
+                    const custom = fontCustomizations[font];
+                    const preview = {
+                        font: font,
+                        isMaster: false,
+                        isFavorite: true,
+                        fontSize: custom ? custom.fontSize : masterTemplate.fontSize,
+                        letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
+                        textX: custom ? custom.textX : masterTemplate.textX,
+                        textY: custom ? custom.textY : masterTemplate.textY
+                    };
+                    
+                    const card = createPreviewCard(preview, font); // Use font name as identifier
+                    favoritesGrid.appendChild(card);
+                });
+            } else {
+                favoritesSection.style.display = 'none';
+            }
+        }
+        function renderPreviews() {
+            previewsGrid.innerHTML = '';
+            
+            previews.forEach((preview, index) => {
+                const identifier = preview.isMaster ? 'master' : preview.font;
+                const card = createPreviewCard(preview, identifier);
+                previewsGrid.appendChild(card);
+            });
+        }
+        function createPreviewCard(preview, identifier) {
+            const card = document.createElement('div');
+            card.className = 'preview-card';
+            
+            // Add favorite styling if this is in the favorites grid
+            if (preview.isFavorite) {
+                card.classList.add('favorite-slot');
+            }
+            
+            // Special styling for master mockup
+            if (preview.isMaster) {
+                card.style.border = '2px solid #ff0000';
+                card.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.3)';
+            }
+            // Font name with star button
+            const fontName = document.createElement('div');
+            fontName.className = 'font-name';
+            
+            if (!preview.isMaster) {
+                const starBtn = document.createElement('button');
+                starBtn.className = 'star-btn';
+                starBtn.innerHTML = favorites.has(preview.font) ? '⭐' : '☆';
+                if (favorites.has(preview.font)) {
+                    starBtn.classList.add('favorited');
+                }
+                starBtn.addEventListener('click', () => {
+                    if (favorites.has(preview.font)) {
+                        favorites.delete(preview.font);
+                    } else {
+                        favorites.add(preview.font);
+                    }
+                    // Regenerate to update both grids
+                    generatePreviews();
+                });
+                fontName.appendChild(starBtn);
+            }
+            
+            const fontText = document.createElement('span');
+            if (preview.isMaster) {
+                fontText.textContent = '🎯 MASTER TEMPLATE (Arial)';
+                fontText.style.color = '#ff0000';
+            } else if (preview.isFavorite) {
+                fontText.textContent = preview.font;
+                fontText.style.color = 'gold';
+            } else {
+                fontText.textContent = preview.font;
+            }
+            fontName.appendChild(fontText);
+            
+            card.appendChild(fontName);
+            // Canvas wrapper
+            const canvasWrapper = document.createElement('div');
+            canvasWrapper.className = 'canvas-wrapper';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = PREVIEW_WIDTH;
+            canvas.height = PREVIEW_HEIGHT;
+            canvasWrapper.appendChild(canvas);
+            card.appendChild(canvasWrapper);
+            // Draw initial canvas
+            drawCanvas(canvas, preview);
+            // Click to focus for keyboard controls
+            canvasWrapper.addEventListener('click', (e) => {
+                // Remove focus from previous canvas
+                if (focusedCanvas) {
+                    focusedCanvas.parentElement.classList.remove('focused');
+                }
+                
+                // Set new focus
+                focusedCanvas = canvas;
+                focusedPreview = preview;
+                canvasWrapper.classList.add('focused');
+                
+                // Prevent drag from starting on click
+                e.stopPropagation();
+            });
+            // Drag text functionality
+            let isDragging = false;
+            const snapThreshold = 0.05; // 5% threshold for snapping
+            
+            canvasWrapper.addEventListener('mousedown', (e) => {
+                isDragging = true;
+            });
+            canvasWrapper.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const rect = canvasWrapper.getBoundingClientRect();
+                    let x = (e.clientX - rect.left) / rect.width;
+                    let y = (e.clientY - rect.top) / rect.height;
+                    
+                    // Snap to center horizontally
+                    if (Math.abs(x - 0.5) < snapThreshold) {
+                        x = 0.5;
+                    }
+                    
+                    // Snap to center vertically
+                    if (Math.abs(y - 0.5) < snapThreshold) {
+                        y = 0.5;
+                    }
+                    
+                    const newX = Math.max(0, Math.min(1, x));
+                    const newY = Math.max(0, Math.min(1, y));
+                    
+                    if (preview.isMaster) {
+                        // Update master template position
+                        masterTemplate.textX = newX;
+                        masterTemplate.textY = newY;
+                        preview.textX = newX;
+                        preview.textY = newY;
+                        // Only update the master canvas during drag
+                        drawCanvas(canvas, preview);
+                        // Don't update others until mouse release
+                    } else {
+                        // Update font customization (links favorite and non-favorite)
+                        if (!fontCustomizations[preview.font]) {
+                            fontCustomizations[preview.font] = {
+                                fontSize: preview.fontSize,
+                                letterSpacing: preview.letterSpacing,
+                                textX: preview.textX,
+                                textY: preview.textY
+                            };
+                        }
+                        fontCustomizations[preview.font].textX = newX;
+                        fontCustomizations[preview.font].textY = newY;
+                        preview.textX = newX;
+                        preview.textY = newY;
+                        drawCanvas(canvas, preview);
+                        
+                        // Update the other instance (favorite or non-favorite)
+                        updateLinkedFont(preview.font);
+                    }
+                }
+            });
+            canvasWrapper.addEventListener('mouseup', () => {
+                if (isDragging && preview.isMaster) {
+                    // Now update all non-customized previews
+                    updateNonCustomizedPreviews();
+                }
+                isDragging = false;
+            });
+            // Also handle when mouse leaves the wrapper while dragging
+            canvasWrapper.addEventListener('mouseleave', () => {
+                if (isDragging && preview.isMaster) {
+                    updateNonCustomizedPreviews();
+                }
+                isDragging = false;
+            });
+            // Controls row 1
+            const controlsRow1 = document.createElement('div');
+            controlsRow1.className = 'controls-row';
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'btn btn-download';
+            downloadBtn.textContent = 'Download';
+            downloadBtn.addEventListener('click', () => {
+                // Create a temporary full-resolution canvas for download
+                const fullCanvas = document.createElement('canvas');
+                fullCanvas.width = FULL_WIDTH;
+                fullCanvas.height = FULL_HEIGHT;
+                
+                // Draw at full resolution
+                drawCanvas(fullCanvas, preview);
+                
+                // Download
+                fullCanvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `thumbnail-${preview.font.replace(/ /g, '-')}-1280x720.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            });
+            controlsRow1.appendChild(downloadBtn);
+            card.appendChild(controlsRow1);
+            // Controls row 2
+            const controlsRow2 = document.createElement('div');
+            controlsRow2.className = 'controls-row';
+            const sizeGroup = document.createElement('div');
+            sizeGroup.className = 'slider-group';
+            const sizeLabel = document.createElement('label');
+            sizeLabel.textContent = `Size: ${preview.fontSize}px`;
+            const sizeSlider = document.createElement('input');
+            sizeSlider.type = 'range';
+            sizeSlider.className = 'slider';
+            sizeSlider.min = '20';
+            sizeSlider.max = '200';
+            sizeSlider.value = preview.fontSize;
+            sizeSlider.addEventListener('input', (e) => {
+                const newSize = parseInt(e.target.value);
+                sizeLabel.textContent = `Size: ${e.target.value}px`;
+                
+                if (preview.isMaster) {
+                    // Update master template
+                    masterTemplate.fontSize = newSize;
+                    preview.fontSize = newSize;
+                    // Only update master canvas during drag
+                    drawCanvas(canvas, preview);
+                } else {
+                    // Update font customization (links favorite and non-favorite)
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY
+                        };
+                    }
+                    fontCustomizations[preview.font].fontSize = newSize;
+                    preview.fontSize = newSize;
+                    drawCanvas(canvas, preview);
+                    
+                    // Update the other instance (favorite or non-favorite)
+                    updateLinkedFont(preview.font);
+                }
+            });
+            // Add change event for master to update all on release
+            if (preview.isMaster) {
+                sizeSlider.addEventListener('change', (e) => {
+                    updateNonCustomizedPreviews();
+                });
+            }
+            sizeGroup.appendChild(sizeLabel);
+            sizeGroup.appendChild(sizeSlider);
+            const spacingGroup = document.createElement('div');
+            spacingGroup.className = 'slider-group';
+            const spacingLabel = document.createElement('label');
+            spacingLabel.textContent = `Char Spacing: ${preview.letterSpacing}px`;
+            const spacingSlider = document.createElement('input');
+            spacingSlider.type = 'range';
+            spacingSlider.className = 'slider';
+            spacingSlider.min = '-10';
+            spacingSlider.max = '50';
+            spacingSlider.value = preview.letterSpacing;
+            spacingSlider.addEventListener('input', (e) => {
+                const newSpacing = parseInt(e.target.value);
+                spacingLabel.textContent = `Char Spacing: ${e.target.value}px`;
+                
+                if (preview.isMaster) {
+                    // Update master template
+                    masterTemplate.letterSpacing = newSpacing;
+                    preview.letterSpacing = newSpacing;
+                    // Only update master canvas during drag
+                    drawCanvas(canvas, preview);
+                } else {
+                    // Update font customization (links favorite and non-favorite)
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY
+                        };
+                    }
+                    fontCustomizations[preview.font].letterSpacing = newSpacing;
+                    preview.letterSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    
+                    // Update the other instance (favorite or non-favorite)
+                    updateLinkedFont(preview.font);
+                }
+            });
+            // Add change event for master to update all on release
+            if (preview.isMaster) {
+                spacingSlider.addEventListener('change', (e) => {
+                    updateNonCustomizedPreviews();
+                });
+            }
+            spacingGroup.appendChild(spacingLabel);
+            spacingGroup.appendChild(spacingSlider);
+            controlsRow2.appendChild(sizeGroup);
+            controlsRow2.appendChild(spacingGroup);
+            card.appendChild(controlsRow2);
+            return card;
+        }
+        // Update the linked instance of a font (favorite or non-favorite)
+        function updateLinkedFont(fontName) {
+            const custom = fontCustomizations[fontName];
+            if (!custom) return;
+            
+            // Update in main grid
+            const mainCanvas = Array.from(previewsGrid.querySelectorAll('canvas')).find((canvas, idx) => {
+                return previews[idx] && previews[idx].font === fontName;
+            });
+            if (mainCanvas) {
+                const previewIndex = Array.from(previewsGrid.querySelectorAll('canvas')).indexOf(mainCanvas);
+                if (previews[previewIndex]) {
+                    previews[previewIndex].fontSize = custom.fontSize;
+                    previews[previewIndex].letterSpacing = custom.letterSpacing;
+                    previews[previewIndex].textX = custom.textX;
+                    previews[previewIndex].textY = custom.textY;
+                    drawCanvas(mainCanvas, previews[previewIndex]);
+                    
+                    // Update sliders
+                    const card = mainCanvas.closest('.preview-card');
+                    updateCardSliders(card, custom);
+                }
+            }
+            
+            // Update in favorites grid
+            const favCanvas = Array.from(favoritesGrid.querySelectorAll('canvas')).find((canvas) => {
+                const card = canvas.closest('.preview-card');
+                const fontText = card.querySelector('.font-name span');
+                return fontText && fontText.textContent === fontName;
+            });
+            if (favCanvas) {
+                const favPreview = {
+                    font: fontName,
+                    isFavorite: true,
+                    fontSize: custom.fontSize,
+                    letterSpacing: custom.letterSpacing,
+                    textX: custom.textX,
+                    textY: custom.textY
+                };
+                drawCanvas(favCanvas, favPreview);
+                
+                // Update sliders
+                const card = favCanvas.closest('.preview-card');
+                updateCardSliders(card, custom);
+            }
+        }
+        function updateCardSliders(card, custom) {
+            const sizeSlider = card.querySelector('input[type="range"][min="20"]');
+            const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
+            const sizeLabel = card.querySelector('.slider-group:first-child label');
+            const spacingLabel = card.querySelector('.slider-group:last-child label');
+            
+            if (sizeSlider) {
+                sizeSlider.value = custom.fontSize;
+                sizeLabel.textContent = `Size: ${custom.fontSize}px`;
+            }
+            if (spacingSlider) {
+                spacingSlider.value = custom.letterSpacing;
+                spacingLabel.textContent = `Char Spacing: ${custom.letterSpacing}px`;
+            }
+        }
+        // Update all non-customized previews to match master template
+        function updateNonCustomizedPreviews() {
+            // Update previews in main grid
+            previews.forEach((preview, index) => {
+                if (!preview.isMaster && !fontCustomizations[preview.font]) {
+                    preview.fontSize = masterTemplate.fontSize;
+                    preview.letterSpacing = masterTemplate.letterSpacing;
+                    preview.textX = masterTemplate.textX;
+                    preview.textY = masterTemplate.textY;
+                    
+                    const canvas = previewsGrid.querySelectorAll('canvas')[index];
+                    if (canvas) {
+                        drawCanvas(canvas, preview);
+                        const card = canvas.closest('.preview-card');
+                        updateCardSliders(card, masterTemplate);
+                    }
+                }
+            });
+            
+            // Also update non-customized favorites
+            const favCanvases = favoritesGrid.querySelectorAll('canvas');
+            favCanvases.forEach((canvas) => {
+                const card = canvas.closest('.preview-card');
+                const fontText = card.querySelector('.font-name span');
+                if (fontText) {
+                    const fontName = fontText.textContent;
+                    // Only update if not customized
+                    if (!fontCustomizations[fontName]) {
+                        const favPreview = {
+                            font: fontName,
+                            isFavorite: true,
+                            fontSize: masterTemplate.fontSize,
+                            letterSpacing: masterTemplate.letterSpacing,
+                            textX: masterTemplate.textX,
+                            textY: masterTemplate.textY
+                        };
+                        drawCanvas(canvas, favPreview);
+                        updateCardSliders(card, masterTemplate);
+                    }
+                }
+            });
+        }
+        function drawCanvas(canvas, preview) {
+            if (!currentImage) return;
+            const ctx = canvas.getContext('2d');
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            // Draw image (cover)
+            const imgAspect = currentImage.width / currentImage.height;
+            const canvasAspect = canvasWidth / canvasHeight;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (imgAspect > canvasAspect) {
+                drawHeight = canvasHeight;
+                drawWidth = drawHeight * imgAspect;
+                offsetX = (canvasWidth - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                drawWidth = canvasWidth;
+                drawHeight = drawWidth / imgAspect;
+                offsetX = 0;
+                offsetY = (canvasHeight - drawHeight) / 2;
+            }
+            ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
+            // Draw text
+            let text = textInput.value;
+            text = applyTextTransform(text, globalSettings.textTransform);
+            
+            if (text) {
+                // Scale font size based on canvas resolution
+                const scaleFactor = canvasWidth / FULL_WIDTH;
+                const scaledFontSize = preview.fontSize * scaleFactor;
+                
+                ctx.font = `${scaledFontSize}px "${preview.font}"`;
+                ctx.fillStyle = globalSettings.textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const x = canvasWidth * preview.textX;
+                const y = canvasHeight * preview.textY;
+                // Apply effects using global settings
+                if (globalSettings.effect === 'shadow') {
+                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                    ctx.shadowBlur = 15 * scaleFactor;
+                    ctx.shadowOffsetX = 5 * scaleFactor;
+                    ctx.shadowOffsetY = 5 * scaleFactor;
+                } else if (globalSettings.effect === 'glow') {
+                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                    ctx.shadowBlur = 20 * scaleFactor;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                }
+                // Letter spacing (character spacing)
+                const scaledLetterSpacing = preview.letterSpacing * scaleFactor;
+                if (preview.letterSpacing !== 0) {
+                    const chars = text.split('');
+                    const charWidths = chars.map(char => ctx.measureText(char).width);
+                    const totalWidth = charWidths.reduce((a, b) => a + b, 0) + 
+                                     (chars.length - 1) * scaledLetterSpacing;
+                    
+                    let currentX = x - totalWidth / 2;
+                    chars.forEach((char, i) => {
+                        ctx.fillText(char, currentX + charWidths[i] / 2, y);
+                        currentX += charWidths[i] + scaledLetterSpacing;
+                    });
+                } else {
+                    ctx.fillText(text, x, y);
+                }
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            }
+        }
+        function updateAllPreviews() {
+            const canvases = previewsGrid.querySelectorAll('canvas');
+            canvases.forEach((canvas, index) => {
+                drawCanvas(canvas, previews[index]);
+            });
+            
+            // Also update favorites
+            const favCanvases = favoritesGrid.querySelectorAll('canvas');
+            favCanvases.forEach((canvas) => {
+                const card = canvas.closest('.preview-card');
+                const fontText = card.querySelector('.font-name span');
+                if (fontText) {
+                    const fontName = fontText.textContent;
+                    const custom = fontCustomizations[fontName];
+                    const favPreview = {
+                        font: fontName,
+                        isFavorite: true,
+                        fontSize: custom ? custom.fontSize : masterTemplate.fontSize,
+                        letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
+                        textX: custom ? custom.textX : masterTemplate.textX,
+                        textY: custom ? custom.textY : masterTemplate.textY
+                    };
+                    drawCanvas(canvas, favPreview);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

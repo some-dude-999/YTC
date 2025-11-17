@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAV File Duplicate Detector - Dark Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3);
+            font-size: 36px;
+        }
+        .drop-zone {
+            background: rgba(20, 20, 20, 0.9);
+            border: 3px dashed #00ffff;
+            border-radius: 20px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .drop-zone.dragover {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: #ff00ff;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+        .drop-zone-text {
+            font-size: 24px;
+            color: #00ffff;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .drop-zone-subtext {
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+        .controls {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e0e0e0;
+        }
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(40, 40, 40, 0.8);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .toggle.active {
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .toggle-slider {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: #000000;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        .toggle.active .toggle-slider {
+            transform: translateX(30px);
+        }
+        button {
+            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+            color: white;
+            border: 1px solid #00ffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+        }
+        button:hover {
+            background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+        }
+        button:disabled {
+            background: rgba(40, 40, 40, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            border-color: rgba(0, 255, 255, 0.2);
+            opacity: 0.6;
+        }
+        
+        button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .table-container {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: rgba(30, 30, 30, 0.8);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #00ffff;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(60, 60, 60, 0.3);
+            color: #d0d0d0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.05);
+        }
+        .duplicate-group-1 { background-color: rgba(255, 82, 82, 0.15); }
+        .duplicate-group-2 { background-color: rgba(0, 150, 255, 0.15); }
+        .duplicate-group-3 { background-color: rgba(186, 85, 211, 0.15); }
+        .duplicate-group-4 { background-color: rgba(255, 215, 0, 0.15); }
+        .duplicate-group-5 { background-color: rgba(0, 255, 127, 0.15); }
+        .duplicate-group-6 { background-color: rgba(255, 105, 180, 0.15); }
+        .duplicate-group-7 { background-color: rgba(0, 255, 255, 0.15); }
+        .duplicate-group-8 { background-color: rgba(255, 140, 0, 0.15); }
+        .duplicate-group-9 { background-color: rgba(154, 205, 50, 0.15); }
+        .duplicate-group-10 { background-color: rgba(255, 69, 0, 0.15); }
+        
+        .played-song {
+            background-color: rgba(128, 128, 128, 0.2) !important;
+            opacity: 0.7;
+        }
+        .played-song td {
+            color: #888888;
+        }
+        
+        .unplayable-row {
+            border-left: 3px solid #ff6b6b;
+        }
+        
+        .file-size, .duration {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #a0a0ff;
+        }
+        .stats {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 255, 0.2);
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Playback Controls */
+        .play-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px 10px;
+            transition: all 0.2s;
+            color: #00ffff;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
+        }
+        .play-btn:hover:not(:disabled) {
+            transform: scale(1.2);
+            background: none;
+            box-shadow: none;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+        }
+        .play-btn.playing {
+            color: #00ff00;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.8));
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .play-btn:disabled {
+            color: #666666;
+            cursor: not-allowed;
+            filter: none;
+            opacity: 0.4;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Favorites */
+        .fav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px 10px;
+            transition: all 0.2s;
+            color: rgba(255, 215, 0, 0.4);
+        }
+        .fav-btn:hover {
+            transform: scale(1.2);
+            background: none;
+            box-shadow: none;
+            color: rgba(255, 215, 0, 0.7);
+        }
+        .fav-btn.favorited {
+            color: #ffd700;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+        }
+        .favorited-row {
+            border-left: 4px solid #ffd700;
+            box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.1);
+        }
+        
+        /* Warning icon */
+        .warning-icon {
+            color: #ff6b6b;
+            font-size: 18px;
+            margin-right: 5px;
+            filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5));
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .status-unplayable {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Audio Player Bar */
+        .audio-player {
+            background: rgba(20, 20, 20, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .audio-player.active {
+            display: block;
+        }
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .player-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .player-title {
+            font-weight: 600;
+            color: #00ffff;
+            flex: 1;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 5px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff 0%, #ff00ff 100%);
+            width: 0%;
+            transition: width 0.1s;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .volume-slider {
+            width: 100px;
+            accent-color: #00ffff;
+        }
+        
+        /* Action buttons in table */
+        .action-cell {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        /* Individual song progress bar in table */
+        .song-progress-container {
+            width: 150px;
+            padding: 5px;
+        }
+        
+        .song-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 3px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .song-progress-bar:hover {
+            background: rgba(50, 50, 50, 0.8);
+        }
+        
+        .song-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff 0%, #ff00ff 100%);
+            width: 0%;
+            transition: width 0.1s;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+        }
+        
+        .song-time-display {
+            font-size: 10px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            color: #00ffff;
+            margin-left: 10px;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: #e0e0e0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 350px;
+        }
+        
+        .notification.warning {
+            border-color: #ff6b6b;
+        }
+        
+        .notification.info {
+            border-color: #00ffff;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 20, 20, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #333333, #1a1a1a);
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #1a1a1a, #333333);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 WAV File Duplicate Detector</h1>
+        
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-text">Drop WAV Files Here</div>
+            <div class="drop-zone-subtext">or click to browse (WAV files only)</div>
+            <input type="file" id="fileInput" multiple accept=".wav" style="display: none;">
+        </div>
+        
+        <div class="controls">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="toggle-container">
+                    <label>Consider File Names:</label>
+                    <div class="toggle active" id="nameToggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span id="toggleStatus">ON</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="consolidateBtn">🗑️ Consolidate Deleted</button>
+                <button id="clearBtn">Clear All Files</button>
+            </div>
+        </div>
+        
+        <!-- Audio Player -->
+        <div class="audio-player" id="audioPlayer">
+            <div class="player-info">
+                <div class="player-title" id="playerTitle">No file playing</div>
+                <div class="player-controls">
+                    <button class="play-btn" id="playerPlayBtn">▶️</button>
+                    <button class="play-btn" id="playerStopBtn">⏹️</button>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="totalFiles">0</div>
+                <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="wavFiles">0</div>
+                <div class="stat-label">WAV Files</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="unplayableFiles">0</div>
+                <div class="stat-label">Unplayable in Browser</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="duplicateGroups">0</div>
+                <div class="stat-label">Duplicate Groups</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="favorites">0</div>
+                <div class="stat-label">Favorites</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalLength">0:00</div>
+                <div class="stat-label">Total Length</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="uniqueLength">0:00</div>
+                <div class="stat-label">Length (No Dupes)</div>
+            </div>
+        </div>
+        
+        <!-- Favorites Table -->
+        <div class="table-container" id="favoritesTableContainer" style="display: none;">
+            <h2>⭐ Favorites</h2>
+            <table id="favoritesTable">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>File Name</th>
+                        <th>Size</th>
+                        <th>Duration</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Group</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <div class="table-container" id="wavTableContainer" style="display: none;">
+            <h2>WAV Files <span id="loadingIndicator" class="loading" style="display: none;"></span><span id="progressText" class="progress-text"></span></h2>
+            <table id="wavTable">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>File Name</th>
+                        <th>Size</th>
+                        <th>Duration</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Group</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        let allFiles = [];
+        let wavFilesList = [];
+        let considerNames = true;
+        let currentAudio = null;
+        let currentPlayingFile = null;
+        let favorites = new Set();
+        let playedSongs = new Set();
+        
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const nameToggle = document.getElementById('nameToggle');
+        const toggleStatus = document.getElementById('toggleStatus');
+        const consolidateBtn = document.getElementById('consolidateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const progressText = document.getElementById('progressText');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerPlayBtn = document.getElementById('playerPlayBtn');
+        const playerStopBtn = document.getElementById('playerStopBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const totalTimeDisplay = document.getElementById('totalTime');
+        
+        // Load favorites and played songs from localStorage
+        loadFavorites();
+        loadPlayedSongs();
+        
+        // Drag and drop events
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        nameToggle.addEventListener('click', () => {
+            considerNames = !considerNames;
+            nameToggle.classList.toggle('active');
+            toggleStatus.textContent = considerNames ? 'ON' : 'OFF';
+            if (allFiles.length > 0) {
+                processFiles();
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            allFiles = [];
+            wavFilesList = [];
+            stopPlayback();
+            updateDisplay();
+        });
+        
+        consolidateBtn.addEventListener('click', async () => {
+            await consolidateDeleted();
+        });
+        
+        async function consolidateDeleted() {
+            if (allFiles.length === 0) {
+                showNotification('No files to check', 'info');
+                return;
+            }
+            
+            consolidateBtn.disabled = true;
+            consolidateBtn.textContent = '🔄 Checking files...';
+            loadingIndicator.style.display = 'inline-block';
+            
+            const initialCount = allFiles.length;
+            const filesToKeep = [];
+            const deletedFiles = [];
+            
+            // Check each file to see if it's still accessible
+            for (let i = 0; i < allFiles.length; i++) {
+                const fileData = allFiles[i];
+                progressText.textContent = `Checking ${i + 1}/${allFiles.length}...`;
+                
+                try {
+                    // Try to read the first byte of the file to check if it's still accessible
+                    const slice = fileData.file.slice(0, 1);
+                    const reader = new FileReader();
+                    
+                    const isAccessible = await new Promise((resolve) => {
+                        reader.onload = () => resolve(true);
+                        reader.onerror = () => resolve(false);
+                        
+                        // Set a timeout in case the read hangs
+                        setTimeout(() => resolve(false), 1000);
+                        
+                        try {
+                            reader.readAsArrayBuffer(slice);
+                        } catch (e) {
+                            resolve(false);
+                        }
+                    });
+                    
+                    if (isAccessible) {
+                        filesToKeep.push(fileData);
+                    } else {
+                        deletedFiles.push(fileData.name);
+                        
+                        // Remove from favorites and played songs
+                        const key = `${fileData.name}_${fileData.size}`;
+                        favorites.delete(key);
+                        playedSongs.delete(key);
+                    }
+                } catch (e) {
+                    // If any error occurs, assume file is deleted
+                    deletedFiles.push(fileData.name);
+                    
+                    // Remove from favorites and played songs
+                    const key = `${fileData.name}_${fileData.size}`;
+                    favorites.delete(key);
+                    playedSongs.delete(key);
+                }
+            }
+            
+            // Update the files list
+            allFiles = filesToKeep;
+            
+            // Save updated favorites and played songs
+            saveFavorites();
+            savePlayedSongs();
+            
+            // Stop playback if current file was deleted
+            if (currentPlayingFile && !allFiles.includes(currentPlayingFile)) {
+                stopPlayback();
+            }
+            
+            // Reprocess files and update display
+            processFiles();
+            
+            progressText.textContent = '';
+            loadingIndicator.style.display = 'none';
+            consolidateBtn.disabled = false;
+            consolidateBtn.textContent = '🗑️ Consolidate Deleted';
+            
+            // Show notification with results
+            const removedCount = initialCount - allFiles.length;
+            if (removedCount > 0) {
+                const fileList = deletedFiles.slice(0, 3).join(', ');
+                const moreText = deletedFiles.length > 3 ? ` and ${deletedFiles.length - 3} more` : '';
+                showNotification(
+                    `Removed ${removedCount} deleted file(s): ${fileList}${moreText}`,
+                    'info'
+                );
+            } else {
+                showNotification('All files are still present', 'info');
+            }
+        }
+        
+        playerPlayBtn.addEventListener('click', () => {
+            if (currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    playerPlayBtn.textContent = '⏸️';
+                } else {
+                    currentAudio.pause();
+                    playerPlayBtn.textContent = '▶️';
+                }
+            }
+        });
+        
+        playerStopBtn.addEventListener('click', () => {
+            stopPlayback();
+        });
+        
+        volumeSlider.addEventListener('input', (e) => {
+            if (currentAudio) {
+                currentAudio.volume = e.target.value / 100;
+            }
+        });
+        
+        progressBar.addEventListener('click', (e) => {
+            if (currentAudio && currentAudio.duration) {
+                const rect = progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                currentAudio.currentTime = percent * currentAudio.duration;
+            }
+        });
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function formatDuration(seconds) {
+            if (!seconds || isNaN(seconds)) return 'N/A';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+        
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function formatTotalDuration(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        async function getAudioDuration(file) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                const objectUrl = URL.createObjectURL(file);
+                let errorOccurred = false;
+                
+                audio.addEventListener('loadedmetadata', () => {
+                    URL.revokeObjectURL(objectUrl);
+                    if (!errorOccurred) {
+                        resolve({
+                            duration: audio.duration,
+                            playable: true,
+                            error: null
+                        });
+                    }
+                });
+                
+                audio.addEventListener('error', (e) => {
+                    errorOccurred = true;
+                    URL.revokeObjectURL(objectUrl);
+                    
+                    let errorMsg = 'Unknown error';
+                    if (audio.error) {
+                        switch(audio.error.code) {
+                            case audio.error.MEDIA_ERR_ABORTED:
+                                errorMsg = 'Playback aborted';
+                                break;
+                            case audio.error.MEDIA_ERR_NETWORK:
+                                errorMsg = 'Network error';
+                                break;
+                            case audio.error.MEDIA_ERR_DECODE:
+                                errorMsg = 'Codec not supported';
+                                break;
+                            case audio.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                                errorMsg = 'Format not supported';
+                                break;
+                        }
+                    }
+                    
+                    resolve({
+                        duration: null,
+                        playable: false,
+                        error: errorMsg
+                    });
+                });
+                
+                // Set a timeout in case neither event fires
+                setTimeout(() => {
+                    if (!errorOccurred) {
+                        URL.revokeObjectURL(objectUrl);
+                        resolve({
+                            duration: null,
+                            playable: false,
+                            error: 'Timeout loading file'
+                        });
+                    }
+                }, 5000);
+                
+                audio.src = objectUrl;
+            });
+        }
+        
+        function normalizeFileName(fileName) {
+            let normalized = fileName.replace(/\.[^/.]+$/, '');
+            normalized = normalized.replace(/[\s_-]*(copy|\(\d+\)|_\d+|\s\d+)[\s_-]*$/gi, '');
+            normalized = normalized.trim().toLowerCase();
+            return normalized;
+        }
+        
+        function areNamesSimilar(name1, name2) {
+            if (!considerNames) return true;
+            
+            const norm1 = normalizeFileName(name1);
+            const norm2 = normalizeFileName(name2);
+            
+            if (norm1 === norm2) return true;
+            if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
+            
+            const maxLen = Math.max(norm1.length, norm2.length);
+            if (maxLen === 0) return true;
+            
+            let differences = 0;
+            for (let i = 0; i < maxLen; i++) {
+                if (norm1[i] !== norm2[i]) differences++;
+            }
+            
+            const similarity = 1 - (differences / maxLen);
+            return similarity > 0.8;
+        }
+        
+        async function handleFiles(files) {
+            loadingIndicator.style.display = 'inline-block';
+            
+            let skippedCount = 0;
+            let skippedFiles = [];
+            let addedCount = 0;
+            
+            for (let file of files) {
+                // Only accept WAV files
+                if (!file.name.toLowerCase().endsWith('.wav')) {
+                    skippedCount++;
+                    skippedFiles.push(file.name);
+                    continue;
+                }
+                
+                const exists = allFiles.some(f => 
+                    f.name === file.name && f.size === file.size
+                );
+                
+                if (!exists) {
+                    const audioInfo = await getAudioDuration(file);
+                    
+                    allFiles.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        duration: audioInfo.duration,
+                        playable: audioInfo.playable,
+                        error: audioInfo.error,
+                        type: 'audio/wav'
+                    });
+                    addedCount++;
+                }
+            }
+            
+            loadingIndicator.style.display = 'none';
+            
+            // Show notification for skipped files
+            if (skippedCount > 0) {
+                const fileList = skippedFiles.slice(0, 3).join(', ');
+                const moreText = skippedCount > 3 ? ` and ${skippedCount - 3} more` : '';
+                showNotification(
+                    `Skipped ${skippedCount} non-WAV file(s): ${fileList}${moreText}`,
+                    'warning'
+                );
+            }
+            
+            if (addedCount > 0) {
+                showNotification(`Added ${addedCount} WAV file(s)`, 'info');
+            }
+            
+            processFiles();
+        }
+        
+        function processFiles() {
+            wavFilesList = allFiles; // All files are now WAV files
+            findDuplicates();
+            updateDisplay();
+        }
+        
+        function findDuplicates() {
+            wavFilesList.forEach(file => {
+                file.duplicateGroup = null;
+            });
+            
+            let groupCounter = 1;
+            
+            for (let i = 0; i < wavFilesList.length; i++) {
+                if (wavFilesList[i].duplicateGroup) continue;
+                
+                let groupMembers = [wavFilesList[i]];
+                
+                for (let j = i + 1; j < wavFilesList.length; j++) {
+                    if (wavFilesList[j].duplicateGroup) continue;
+                    
+                    const sizeMatch = wavFilesList[i].size === wavFilesList[j].size;
+                    
+                    // Handle unplayable files - can still match by size
+                    let durationMatch = true;
+                    if (wavFilesList[i].duration && wavFilesList[j].duration) {
+                        durationMatch = Math.abs(wavFilesList[i].duration - wavFilesList[j].duration) < 0.1;
+                    }
+                    
+                    const nameMatch = areNamesSimilar(wavFilesList[i].name, wavFilesList[j].name);
+                    
+                    if (sizeMatch && durationMatch && nameMatch) {
+                        groupMembers.push(wavFilesList[j]);
+                    }
+                }
+                
+                if (groupMembers.length > 1) {
+                    groupMembers.forEach(member => {
+                        member.duplicateGroup = groupCounter;
+                    });
+                    groupCounter++;
+                }
+            }
+        }
+        
+        function playFile(fileData) {
+            // Check if file is playable
+            if (!fileData.playable) {
+                showNotification(
+                    `Cannot play "${fileData.name}" in browser. ${fileData.error || 'Codec not supported'}. Try playing on desktop.`,
+                    'warning'
+                );
+                return;
+            }
+            
+            // If clicking the same file that's playing, pause/resume it
+            if (currentPlayingFile === fileData && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    playerPlayBtn.textContent = '⏸️';
+                } else {
+                    currentAudio.pause();
+                    playerPlayBtn.textContent = '▶️';
+                }
+                updateDisplay();
+                return;
+            }
+            
+            // Reset previous song's progress bar if switching songs
+            if (currentPlayingFile && currentPlayingFile !== fileData) {
+                const prevProgressId = `progress-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const prevProgressFill = document.getElementById(prevProgressId);
+                if (prevProgressFill) {
+                    prevProgressFill.style.width = '0%';
+                }
+                
+                const prevTimeId = `time-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const prevTimeDisplay = document.getElementById(prevTimeId);
+                if (prevTimeDisplay) {
+                    prevTimeDisplay.textContent = '0:00';
+                }
+            }
+            
+            // Otherwise, stop current and play new file
+            stopPlayback();
+            
+            currentAudio = new Audio();
+            const objectUrl = URL.createObjectURL(fileData.file);
+            currentAudio.src = objectUrl;
+            currentAudio.volume = volumeSlider.value / 100;
+            currentPlayingFile = fileData;
+            
+            currentAudio.play();
+            
+            // Mark as played
+            const key = `${fileData.name}_${fileData.size}`;
+            playedSongs.add(key);
+            savePlayedSongs();
+            
+            audioPlayer.classList.add('active');
+            playerTitle.textContent = fileData.name;
+            playerPlayBtn.textContent = '⏸️';
+            totalTimeDisplay.textContent = formatTime(fileData.duration);
+            
+            currentAudio.addEventListener('timeupdate', updateProgress);
+            currentAudio.addEventListener('ended', stopPlayback);
+            
+            updateDisplay();
+        }
+        
+        function updateProgress() {
+            if (currentAudio && currentAudio.duration && currentPlayingFile) {
+                const percent = (currentAudio.currentTime / currentAudio.duration) * 100;
+                
+                // Update main player progress bar
+                progressFill.style.width = percent + '%';
+                currentTimeDisplay.textContent = formatTime(currentAudio.currentTime);
+                
+                // Update individual song progress bar
+                const songProgressId = `progress-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const songProgressFill = document.getElementById(songProgressId);
+                if (songProgressFill) {
+                    songProgressFill.style.width = percent + '%';
+                }
+                
+                // Update individual song time display
+                const songTimeId = `time-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const songTimeDisplay = document.getElementById(songTimeId);
+                if (songTimeDisplay) {
+                    songTimeDisplay.textContent = formatTime(currentAudio.currentTime);
+                }
+            }
+        }
+        
+        function stopPlayback() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.removeEventListener('timeupdate', updateProgress);
+                currentAudio.removeEventListener('ended', stopPlayback);
+                URL.revokeObjectURL(currentAudio.src);
+                currentAudio = null;
+            }
+            
+            // Reset individual progress bar if there was a playing file
+            if (currentPlayingFile) {
+                const songProgressId = `progress-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const songProgressFill = document.getElementById(songProgressId);
+                if (songProgressFill) {
+                    songProgressFill.style.width = '0%';
+                }
+                
+                const songTimeId = `time-${currentPlayingFile.name}-${currentPlayingFile.size}`;
+                const songTimeDisplay = document.getElementById(songTimeId);
+                if (songTimeDisplay) {
+                    songTimeDisplay.textContent = '0:00';
+                }
+            }
+            
+            currentPlayingFile = null;
+            playerPlayBtn.textContent = '▶️';
+            progressFill.style.width = '0%';
+            currentTimeDisplay.textContent = '0:00';
+            
+            updateDisplay();
+        }
+        
+        function toggleFavorite(fileData) {
+            const key = `${fileData.name}_${fileData.size}`;
+            
+            if (favorites.has(key)) {
+                favorites.delete(key);
+            } else {
+                favorites.add(key);
+            }
+            
+            saveFavorites();
+            updateDisplay();
+        }
+        
+        function isFavorite(fileData) {
+            const key = `${fileData.name}_${fileData.size}`;
+            return favorites.has(key);
+        }
+        
+        function hasBeenPlayed(fileData) {
+            const key = `${fileData.name}_${fileData.size}`;
+            return playedSongs.has(key);
+        }
+        
+        function saveFavorites() {
+            localStorage.setItem('audioFavorites', JSON.stringify([...favorites]));
+        }
+        
+        function loadFavorites() {
+            const stored = localStorage.getItem('audioFavorites');
+            if (stored) {
+                favorites = new Set(JSON.parse(stored));
+            }
+        }
+        
+        function savePlayedSongs() {
+            localStorage.setItem('playedSongs', JSON.stringify([...playedSongs]));
+        }
+        
+        function loadPlayedSongs() {
+            const stored = localStorage.getItem('playedSongs');
+            if (stored) {
+                playedSongs = new Set(JSON.parse(stored));
+            }
+        }
+        
+        function createFileRow(fileData) {
+            const row = document.createElement('tr');
+            const isFav = isFavorite(fileData);
+            const isPlaying = currentPlayingFile === fileData;
+            const played = hasBeenPlayed(fileData);
+            const isUnplayable = !fileData.playable;
+            
+            if (fileData.duplicateGroup) {
+                row.className = `duplicate-group-${(fileData.duplicateGroup - 1) % 10 + 1}`;
+            }
+            
+            if (played) {
+                row.classList.add('played-song');
+            }
+            
+            if (isFav) {
+                row.classList.add('favorited-row');
+            }
+            
+            if (isUnplayable) {
+                row.classList.add('unplayable-row');
+            }
+            
+            const playPauseIcon = (isPlaying && currentAudio && !currentAudio.paused) ? '⏸️' : '▶️';
+            
+            // Status column
+            let statusContent = '';
+            if (isUnplayable) {
+                const errorTitle = (fileData.error || 'Cannot play in browser').replace(/"/g, '&quot;');
+                statusContent = `<span class="warning-icon" title="${errorTitle}">⚠️</span><span class="status-badge status-unplayable">Unplayable</span>`;
+            } else {
+                statusContent = '✓';
+            }
+            
+            // Create action cell with buttons
+            const actionCell = document.createElement('td');
+            actionCell.className = 'action-cell';
+            
+            if (isUnplayable) {
+                const warningSpan = document.createElement('span');
+                warningSpan.className = 'warning-icon';
+                warningSpan.textContent = '⚠️';
+                actionCell.appendChild(warningSpan);
+            }
+            
+            const playBtn = document.createElement('button');
+            playBtn.className = 'play-btn' + (isPlaying ? ' playing' : '');
+            playBtn.textContent = playPauseIcon;
+            playBtn.disabled = isUnplayable;
+            playBtn.onclick = () => playFile(fileData);
+            actionCell.appendChild(playBtn);
+            
+            const favBtn = document.createElement('button');
+            favBtn.className = 'fav-btn' + (isFav ? ' favorited' : '');
+            favBtn.textContent = isFav ? '⭐' : '☆';
+            favBtn.onclick = () => toggleFavorite(fileData);
+            actionCell.appendChild(favBtn);
+            
+            // Create other cells
+            const nameCell = document.createElement('td');
+            nameCell.textContent = fileData.name;
+            
+            const sizeCell = document.createElement('td');
+            sizeCell.className = 'file-size';
+            sizeCell.textContent = formatFileSize(fileData.size);
+            
+            const durationCell = document.createElement('td');
+            durationCell.className = 'duration';
+            durationCell.textContent = formatDuration(fileData.duration);
+            
+            // Create progress cell with progress bar
+            const progressCell = document.createElement('td');
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'song-progress-container';
+            
+            const progressBarDiv = document.createElement('div');
+            progressBarDiv.className = 'song-progress-bar';
+            progressBarDiv.onclick = (e) => seekInSong(e, fileData, progressBarDiv);
+            
+            const progressFillDiv = document.createElement('div');
+            progressFillDiv.className = 'song-progress-fill';
+            progressFillDiv.id = `progress-${fileData.name}-${fileData.size}`;
+            
+            progressBarDiv.appendChild(progressFillDiv);
+            
+            const timeDisplay = document.createElement('div');
+            timeDisplay.className = 'song-time-display';
+            timeDisplay.id = `time-${fileData.name}-${fileData.size}`;
+            timeDisplay.textContent = isPlaying && currentAudio ? formatTime(currentAudio.currentTime) : '0:00';
+            
+            progressContainer.appendChild(progressBarDiv);
+            progressContainer.appendChild(timeDisplay);
+            progressCell.appendChild(progressContainer);
+            
+            const statusCell = document.createElement('td');
+            statusCell.innerHTML = statusContent;
+            
+            const groupCell = document.createElement('td');
+            groupCell.textContent = fileData.duplicateGroup ? `Group ${fileData.duplicateGroup}` : '-';
+            
+            // Append all cells
+            row.appendChild(actionCell);
+            row.appendChild(nameCell);
+            row.appendChild(sizeCell);
+            row.appendChild(durationCell);
+            row.appendChild(progressCell);
+            row.appendChild(statusCell);
+            row.appendChild(groupCell);
+            
+            return row;
+        }
+        
+        function seekInSong(event, fileData, progressBar) {
+            // If file is not playable, do nothing
+            if (!fileData.playable) {
+                showNotification(
+                    `Cannot play "${fileData.name}" in browser. ${fileData.error || 'Codec not supported'}`,
+                    'warning'
+                );
+                return;
+            }
+            
+            // If this file is not currently playing, start playing it
+            if (currentPlayingFile !== fileData) {
+                playFile(fileData);
+                // Wait a bit for the audio to load before seeking
+                setTimeout(() => {
+                    if (currentAudio && currentAudio.duration) {
+                        const rect = progressBar.getBoundingClientRect();
+                        const percent = (event.clientX - rect.left) / rect.width;
+                        currentAudio.currentTime = percent * currentAudio.duration;
+                    }
+                }, 100);
+            } else if (currentAudio && currentAudio.duration) {
+                // File is already playing, just seek
+                const rect = progressBar.getBoundingClientRect();
+                const percent = (event.clientX - rect.left) / rect.width;
+                currentAudio.currentTime = percent * currentAudio.duration;
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById('stats').style.display = allFiles.length > 0 ? 'flex' : 'none';
+            document.getElementById('totalFiles').textContent = allFiles.length;
+            document.getElementById('wavFiles').textContent = wavFilesList.length;
+            
+            const unplayableCount = wavFilesList.filter(f => !f.playable).length;
+            document.getElementById('unplayableFiles').textContent = unplayableCount;
+            
+            const duplicateGroupsCount = [...new Set(wavFilesList.filter(f => f.duplicateGroup).map(f => f.duplicateGroup))].length;
+            document.getElementById('duplicateGroups').textContent = duplicateGroupsCount;
+            
+            const favoritesCount = allFiles.filter(f => isFavorite(f)).length;
+            document.getElementById('favorites').textContent = favoritesCount;
+            
+            let totalDuration = 0;
+            let uniqueDuration = 0;
+            const processedGroups = new Set();
+            
+            wavFilesList.forEach(fileData => {
+                if (fileData.duration && !isNaN(fileData.duration)) {
+                    totalDuration += fileData.duration;
+                    
+                    if (fileData.duplicateGroup) {
+                        if (!processedGroups.has(fileData.duplicateGroup)) {
+                            uniqueDuration += fileData.duration;
+                            processedGroups.add(fileData.duplicateGroup);
+                        }
+                    } else {
+                        uniqueDuration += fileData.duration;
+                    }
+                }
+            });
+            
+            document.getElementById('totalLength').textContent = formatTotalDuration(totalDuration);
+            document.getElementById('uniqueLength').textContent = formatTotalDuration(uniqueDuration);
+            
+            // Update Favorites Table
+            const favoritesTableContainer = document.getElementById('favoritesTableContainer');
+            const favoritesTableBody = document.querySelector('#favoritesTable tbody');
+            const favoriteFiles = allFiles.filter(f => isFavorite(f));
+            
+            if (favoriteFiles.length > 0) {
+                favoritesTableContainer.style.display = 'block';
+                favoritesTableBody.innerHTML = '';
+                
+                favoriteFiles.forEach(fileData => {
+                    favoritesTableBody.appendChild(createFileRow(fileData));
+                });
+            } else {
+                favoritesTableContainer.style.display = 'none';
+            }
+            
+            // Update WAV table
+            const wavTableContainer = document.getElementById('wavTableContainer');
+            const wavTableBody = document.querySelector('#wavTable tbody');
+            
+            if (wavFilesList.length > 0) {
+                wavTableContainer.style.display = 'block';
+                wavTableBody.innerHTML = '';
+                
+                const sortedWavFiles = [...wavFilesList].sort((a, b) => {
+                    if (a.duplicateGroup && b.duplicateGroup) {
+                        if (a.duplicateGroup !== b.duplicateGroup) {
+                            return a.duplicateGroup - b.duplicateGroup;
+                        }
+                    } else if (a.duplicateGroup) {
+                        return -1;
+                    } else if (b.duplicateGroup) {
+                        return 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+                
+                sortedWavFiles.forEach(fileData => {
+                    wavTableBody.appendChild(createFileRow(fileData));
+                });
+            } else {
+                wavTableContainer.style.display = 'none';
+            }
+        }
+        
+    </script>
+</body>
+</html>
