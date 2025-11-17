@@ -205,17 +205,6 @@
             transform: translateY(2px);
         }
 
-        .tab-close {
-            margin-left: 10px;
-            color: #dc3545;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .tab-close:hover {
-            color: #c82333;
-        }
-
         .tab-content {
             display: none;
         }
@@ -224,21 +213,11 @@
             display: block;
         }
 
-        .fixed-header {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 100;
-            padding: 20px 0;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #667eea;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
         }
 
         .results-header h2 {
@@ -488,16 +467,19 @@
             processBtn.disabled = true;
             progressContainer.style.display = 'block';
             results.style.display = 'block';
-            
+
             const targetFrames = parseInt(document.getElementById('targetFrames').value);
-            
+
+            // Create tabs and grids upfront before processing
+            createTabs();
+
             for (let i = 0; i < videos.length; i++) {
                 const video = videos[i];
-                
+
                 if (video.processed) continue;
-                
+
                 status.textContent = `Processing video ${i + 1}/${videos.length}: ${video.name}`;
-                
+
                 try {
                     await new Promise((resolve) => {
                         if (video.videoElement.readyState >= 1) {
@@ -506,77 +488,72 @@
                             video.videoElement.onloadedmetadata = resolve;
                         }
                     });
-                    
+
                     const duration = video.videoElement.duration;
                     const intervalSeconds = duration / targetFrames;
-                    
+
                     for (let j = 0; j < targetFrames; j++) {
                         const time = j * intervalSeconds;
                         const frameData = await captureFrame(video.videoElement, time);
                         video.frames.push(frameData);
-                        
+
+                        // Render frame immediately
+                        addFrameToGrid(i, frameData);
+
                         const progress = ((j + 1) / targetFrames * 100).toFixed(1);
                         progressFill.style.width = progress + '%';
                         progressFill.textContent = progress + '%';
                         status.textContent = `Video ${i + 1}/${videos.length}: ${j + 1}/${targetFrames} frames`;
                     }
-                    
+
                     video.processed = true;
-                    
+
                 } catch (error) {
                     console.error('Error processing video:', error);
                     status.textContent = `Error processing ${video.name}: ${error.message}`;
                 }
             }
-            
-            createTabs();
-            
+
             status.textContent = `Done! Processed ${videos.length} video(s)`;
             setTimeout(() => {
                 progressContainer.style.display = 'none';
             }, 2000);
-            
+
             processBtn.disabled = false;
         }
 
         function createTabs() {
             tabsContainer.innerHTML = '';
             tabContents.innerHTML = '';
-            
+
             videos.forEach((video, index) => {
                 const tab = document.createElement('div');
                 tab.className = 'tab' + (index === 0 ? ' active' : '');
-                tab.innerHTML = `
-                    ${index + 1}
-                    <span class="tab-close" data-action="close">×</span>
-                `;
-                
-                tab.addEventListener('click', (e) => {
-                    if (e.target.dataset.action === 'close') {
-                        closeTab(index);
-                    } else {
-                        switchTab(index);
-                    }
+                tab.innerHTML = `${index + 1}`;
+
+                tab.addEventListener('click', () => {
+                    switchTab(index);
                 });
-                
+
                 tabsContainer.appendChild(tab);
-                
+
                 const tabContent = document.createElement('div');
                 tabContent.className = 'tab-content' + (index === 0 ? ' active' : '');
                 tabContent.id = `tab-content-${index}`;
-                
+
                 tabContent.innerHTML = `
-                    <div class="fixed-header">
-                        <div class="results-header">
-                            <h2>${video.name} - Screenshots (<span class="frame-count">${video.frames.length}</span>)</h2>
-                        </div>
+                    <div class="results-header">
+                        <h2>${video.name} - Screenshots (<span class="frame-count">${video.frames.length}</span>)</h2>
                     </div>
                     <div class="frames-grid" id="frames-grid-${index}"></div>
                 `;
-                
+
                 tabContents.appendChild(tabContent);
-                
-                populateFrames(index);
+
+                // Only populate if frames already exist (for re-rendering tabs)
+                if (video.frames.length > 0 && video.processed) {
+                    populateFrames(index);
+                }
             });
         }
 
@@ -584,31 +561,57 @@
             document.querySelectorAll('.tab').forEach((tab, i) => {
                 tab.classList.toggle('active', i === index);
             });
-            
+
             document.querySelectorAll('.tab-content').forEach((content, i) => {
                 content.classList.toggle('active', i === index);
             });
-            
+
             currentVideoIndex = index;
         }
 
-        function closeTab(index) {
-            if (videos.length === 1) {
-                alert('Cannot close the last video. Use Reset to start over.');
-                return;
-            }
-            
-            const confirmed = confirm(`Remove video ${index + 1}?`);
-            if (!confirmed) return;
-            
-            videos[index].videoElement.remove();
-            videos.splice(index, 1);
-            
-            if (videos.length > 0) {
-                currentVideoIndex = Math.min(index, videos.length - 1);
-                createTabs();
+        function addFrameToGrid(videoIndex, frame) {
+            const grid = document.getElementById(`frames-grid-${videoIndex}`);
+            if (!grid) return;
+
+            const card = document.createElement('div');
+            card.className = 'frame-card';
+            card.dataset.frameId = frame.id;
+
+            const minutes = Math.floor(frame.time / 60);
+            const seconds = Math.floor(frame.time % 60);
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+
+            let timeStr = '';
+            if (hours > 0) {
+                timeStr = `${hours}:${remainingMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             } else {
-                results.style.display = 'none';
+                timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            card.innerHTML = `
+                <button class="remove-btn" data-action="remove">×</button>
+                <img src="${frame.imageData}" alt="Screenshot at ${timeStr}">
+                <div class="frame-info">
+                    <div class="frame-time">⏱️ ${timeStr}</div>
+                    <button class="download-btn" data-action="download">
+                        Download JPG
+                    </button>
+                </div>
+            `;
+
+            const removeBtn = card.querySelector('[data-action="remove"]');
+            const downloadBtn = card.querySelector('[data-action="download"]');
+
+            removeBtn.addEventListener('click', () => removeFrame(videoIndex, frame.id));
+            downloadBtn.addEventListener('click', () => downloadFrame(videoIndex, frame.id));
+
+            grid.appendChild(card);
+
+            // Update frame count
+            const frameCountSpan = document.querySelector(`#tab-content-${videoIndex} .frame-count`);
+            if (frameCountSpan) {
+                frameCountSpan.textContent = videos[videoIndex].frames.length;
             }
         }
 
