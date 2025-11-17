@@ -328,6 +328,36 @@
         .download-btn:hover {
             background: #218838;
         }
+
+        #scrollToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+            padding: 0;
+        }
+
+        #scrollToTop:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        #scrollToTop.show {
+            display: flex;
+        }
     </style>
 </head>
 <body>
@@ -367,6 +397,8 @@
 
         <canvas id="canvas" style="display: none;"></canvas>
     </div>
+
+    <button id="scrollToTop" title="Back to top">↑</button>
 
     <script>
         let videos = [];
@@ -759,6 +791,24 @@
 
         processBtn.addEventListener('click', processVideo);
         resetBtn.addEventListener('click', resetEverything);
+
+        // Scroll to top button functionality
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
     </script>
 </body>
 </html>
