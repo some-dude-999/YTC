@@ -1,0 +1,67 @@
+=== Bulk Downloader Link Opener.txt ===
+PROJECT: YTC - YouTube Content Tools
+COMPONENT: Bulk Download Parallelizer
+CREATED: 2025-11-19
+LAST UPDATED: 2025-11-19 - Initial documentation created
+
+DATA SOURCES:
+- User Input: Number of tabs (1-50), download site selection
+- File: None (no external data loaded)
+- API: None (no API calls made)
+
+FUNCTIONALITY:
+- Main Purpose: Opens multiple browser tabs to parallelize YouTube video downloads
+- Key Functions:
+  * openTabs() - Opens browser tabs with 1-second delay between each
+  * showStatus(message, type) - Displays status messages to user
+- Event Handlers:
+  * File input validation (min 1, max 50 tabs)
+  * Enter key support for quick submission
+  * Pop-up blocker detection warnings
+- Rate Limiting: 1 second delay between tab openings to prevent browser blocking
+
+DEPENDENCIES:
+- External Libraries: None (pure vanilla JavaScript)
+- Project Files: None (standalone HTML file)
+- APIs Required: None
+
+INTEGRATION:
+- Receives data from: User form input only
+- Sends data to: None (opens external URLs in new tabs)
+- Triggers: User clicks "Open Tabs" button or presses Enter
+
+TECHNICAL DETAILS:
+- Default download site: https://v2.yt1s.biz/
+- Maximum tabs: 50 (hard limit to prevent browser overload)
+- Tab opening interval: 1000ms (1 second)
+- Uses window.open() with '_blank' target
+
+WORKFLOW:
+1. User enters number of tabs to open (default: 10)
+2. User selects download site (currently only yt1s.biz available)
+3. User clicks "Open Tabs"
+4. Script opens tabs sequentially with 1-second delays
+5. Progress counter updates in real-time
+6. Button is disabled during operation to prevent double-clicks
+
+BROWSER COMPATIBILITY:
+- Requires pop-up permission from user
+- Modern browsers (Chrome, Firefox, Edge, Safari)
+- May be blocked by aggressive pop-up blockers
+
+USER WARNINGS:
+- Pop-up blocker must be disabled for this site
+- Maximum 50 tabs enforced to prevent system overload
+- Each tab requires manual interaction for actual download
+
+CORRECTIONS & CLARIFICATIONS:
+- Initially thought: This tool downloads videos automatically
+- Actually: This tool only opens tabs to the download site; user must still paste URLs and click download in each tab
+- Why this matters: This is a workflow optimization tool, not an automated downloader
+
+NOTES:
+- This tool helps users process multiple videos faster by having multiple download windows ready
+- Users still need to manually paste video URLs into each opened tab
+- Consider adding bookmarklet version for easier access
+- Future enhancement: Add more download sites as options
+===
