@@ -1,0 +1,109 @@
+=== MUSIC THUMBNAIL GEN.txt ===
+PROJECT: YTC - YouTube Content Tools
+COMPONENT: YouTube Thumbnail Creator with Text
+CREATED: 2025-11-19
+LAST UPDATED: 2025-11-19 - Initial documentation created
+
+DATA SOURCES:
+- User Input: Text overlay, font category, text effects, text color, text transformation
+- File: User-uploaded image (background for thumbnail)
+- External: Google Fonts API (560+ fonts loaded dynamically)
+
+FUNCTIONALITY:
+- Main Purpose: Create 1280x720 YouTube thumbnails with custom text in various fonts
+- Key Functions:
+  * loadGoogleFonts() - Dynamically loads all fonts from Google Fonts API
+  * generatePreviews() - Creates preview cards for all fonts (or filtered category)
+  * drawCanvas(canvas, preview) - Renders image + text overlay at specified resolution
+  * createPreviewCard(preview, identifier) - Builds interactive preview with controls
+  * updateLinkedFont(fontName) - Syncs customizations between favorites and main grid
+  * updateNonCustomizedPreviews() - Applies master template changes to all non-customized fonts
+- Event Handlers:
+  * Text input updates all previews in real-time
+  * Drag-and-drop for image upload
+  * Canvas click for keyboard control focus
+  * Arrow keys for 1px text positioning
+  * Mouse drag for text repositioning with snap-to-center
+
+DEPENDENCIES:
+- External Libraries: Google Fonts API (all fonts loaded via CDN)
+- Project Files: None (standalone HTML file)
+- APIs Required: https://fonts.googleapis.com/css2
+
+INTEGRATION:
+- Receives data from: User image file, user text input, Google Fonts CDN
+- Sends data to: Browser download (PNG exports at 1280x720)
+- Triggers: Image upload, text input changes, font customization
+
+TECHNICAL DETAILS:
+- Resolution: Full-res 1280x720 (displays at 640x360 preview)
+- Font Categories: 19 categories + "all" (bold, futuristic, modern, clean, condensed, display, elegant, script, retro, hip-hop, minimal, corporate, grunge, rounded, techno, halloween, christmas, synthwave, space, medieval, pirate)
+- Total Fonts: 560+ from Google Fonts
+- Export Format: PNG (image/png)
+- Text Effects: Drop shadow, glow, or none
+- Text Colors: White or black
+- Text Transformations: None, uppercase, lowercase, title case
+
+MASTER TEMPLATE SYSTEM:
+- Arial Master Template: First preview card acts as master template
+- Default Settings: fontSize 80px, letterSpacing 0, textX 0.5, textY 0.5
+- Customization Tracking: fontCustomizations object stores per-font overrides
+- Linking Logic: Fonts without customizations follow master template changes
+- "Relink All" Button: Clears all customizations and resets to master
+
+FAVORITES SYSTEM:
+- Star Button: Click to favorite/unfavorite any font
+- Favorites Grid: Displays above main grid when favorites exist
+- Persistence: None (localStorage not implemented - resets on page reload)
+- Gold Styling: Favorites have gold border and special highlighting
+
+POSITIONING CONTROLS:
+- Mouse Drag: Click and drag text, 5% snap threshold for center alignment
+- Keyboard Control: Click canvas to focus, then use arrow keys for 1px precision
+- Visual Feedback: Green border indicates focused canvas
+- Master Template: Moving master updates all non-customized fonts on mouse release
+
+SLIDER CONTROLS (per preview):
+- Size: 20-200px (default 80px)
+- Character Spacing: -10 to 50px (default 0px)
+- Master Behavior: Changes apply to all non-customized fonts when slider released
+- Individual Behavior: Changes saved to fontCustomizations, synced between favorite/main grid
+
+WORKFLOW:
+1. User uploads background image (drag-drop or click)
+2. Arial master template appears first
+3. All fonts render below (or filtered by category)
+4. User adjusts master template (text position, size, spacing)
+5. All non-customized fonts inherit master settings
+6. User can customize individual fonts (breaks link to master)
+7. User favorites preferred fonts (appear at top)
+8. User downloads selected thumbnails as 1280x720 PNG files
+9. "Relink All" resets all customizations to master template
+
+BROWSER COMPATIBILITY:
+- Modern browsers with Canvas API support
+- Requires internet connection for Google Fonts CDN
+- FileReader API for image upload
+
+CORRECTIONS & CLARIFICATIONS:
+- Initially thought: Fonts were embedded in the HTML file
+- Actually: Fonts are loaded dynamically from Google Fonts CDN via single API call
+- Why this matters: Requires internet connection; cannot work offline
+
+- Initially thought: Favorites were persistent across sessions
+- Actually: Favorites reset on page reload (no localStorage implementation)
+- Why this matters: Users must complete workflow in single session
+
+- Initially thought: Master template forces all fonts to match
+- Actually: Master template only affects non-customized fonts; customizations persist until "Relink All"
+- Why this matters: Users can mix master-linked and custom fonts
+
+NOTES:
+- Font categories designed for music genres (EDM, hip-hop, lo-fi, etc.)
+- Some fonts appear in multiple categories (e.g., "Creepster" in halloween, grunge, pirate)
+- Arrow key positioning shows green border to indicate focused canvas
+- Preview renders at 640x360, downloads at full 1280x720
+- Letter spacing implemented with manual character positioning (not CSS letter-spacing)
+- Text effects scale with resolution (shadow blur, offset calculated based on canvas size)
+- Consider adding: localStorage persistence, batch download, custom font upload
+===

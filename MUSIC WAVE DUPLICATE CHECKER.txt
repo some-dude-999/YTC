@@ -1,0 +1,157 @@
+=== MUSIC WAVE DUPLICATE CHECKER.txt ===
+PROJECT: YTC - YouTube Content Tools
+COMPONENT: WAV File Duplicate Detector
+CREATED: 2025-11-19
+LAST UPDATED: 2025-11-19 - Initial documentation created
+
+DATA SOURCES:
+- User Input: WAV file uploads (drag-drop or file picker), duplicate detection toggle
+- File: Browser File API (local WAV files only)
+- Storage: localStorage for favorites and played songs tracking
+
+FUNCTIONALITY:
+- Main Purpose: Detect duplicate WAV files based on size, duration, and filename similarity
+- Key Functions:
+  * handleFiles(files) - Validates and processes uploaded files
+  * getAudioDuration(file) - Extracts audio metadata and checks playability
+  * findDuplicates() - Groups files by size, duration, and name similarity
+  * normalizeFileName(fileName) - Strips common duplicate markers (copy, (1), etc.)
+  * areNamesSimilar(name1, name2) - Fuzzy matching with 80% similarity threshold
+  * consolidateDeleted() - Removes files that are no longer accessible
+  * playFile(fileData) - Plays audio with browser Audio API
+  * toggleFavorite(fileData) - Adds/removes from favorites set
+- Event Handlers:
+  * Drag-and-drop file upload
+  * Play/pause buttons per file
+  * Favorite star buttons
+  * Progress bar click-to-seek
+  * Volume slider
+  * Consider Names toggle
+
+DEPENDENCIES:
+- External Libraries: None (pure vanilla JavaScript)
+- Project Files: None (standalone HTML file)
+- APIs Required: Browser Audio API, FileReader API, localStorage API
+
+INTEGRATION:
+- Receives data from: User file uploads, localStorage (favorites, played songs)
+- Sends data to: localStorage (persistence across sessions)
+- Triggers: File upload, duplicate detection settings change, playback controls
+
+TECHNICAL DETAILS:
+- File Type Filter: .wav files only (enforced at input and validation)
+- Duplicate Detection Criteria:
+  1. File size must match exactly
+  2. Duration must match within 0.1 seconds
+  3. Filename similarity > 80% (if "Consider Names" enabled)
+- Filename Normalization: Removes "copy", "(1)", "_1", " 1" suffixes
+- Duplicate Groups: Color-coded (10 colors, cycling)
+- Playability Check: Browser codec support detection
+
+DUPLICATE DETECTION LOGIC:
+- Size Match: Byte-for-byte size comparison
+- Duration Match: Audio duration ±0.1 seconds
+- Name Similarity:
+  * Exact match after normalization
+  * Substring match (one contains the other)
+  * Character-by-character similarity > 80%
+- Toggle: "Consider Names" can disable name matching
+
+PLAYBACK SYSTEM:
+- Built-in Audio Player: Main player bar at top
+- Individual Progress Bars: Per-song in table rows
+- Playback States: Playing (green pulsing ⏸️), paused (cyan ▶️)
+- Unplayable Files: Disabled with warning icon (codec not supported)
+- Volume Control: Global slider (default 70%)
+- Seek Controls: Click progress bar to jump to timestamp
+- Auto-tracking: Played songs marked with gray overlay
+
+FAVORITES SYSTEM:
+- Star Buttons: ☆ (unfavorited) → ⭐ (favorited)
+- Favorites Table: Displayed above main table when favorites exist
+- Visual Indicators: Gold border, gold star icon, gold text
+- Persistence: localStorage key "audioFavorites"
+- Syncing: Favorites persist across page reloads
+
+PLAYED SONGS TRACKING:
+- Auto-marking: Any song that starts playing is marked as "played"
+- Visual Indicator: Gray overlay with reduced opacity
+- Persistence: localStorage key "playedSongs"
+- Purpose: Helps user track listening progress
+
+CONSOLIDATE DELETED:
+- Purpose: Remove files that were deleted from filesystem
+- Process: Attempts to read first byte of each file
+- Timeout: 1 second per file check
+- Cleanup: Removes from favorites and played songs if deleted
+- Progress: Shows "Checking X/Y..." status
+- Retry Logic: Up to 4 retries with exponential backoff (2s, 4s, 8s, 16s)
+
+STATISTICS PANEL:
+- Total Files: Count of all uploaded files
+- WAV Files: Count of WAV files (same as total, since non-WAV rejected)
+- Unplayable in Browser: Count of files with codec issues
+- Duplicate Groups: Number of unique duplicate groups found
+- Favorites: Count of favorited files
+- Total Length: Sum of all audio durations
+- Length (No Dupes): Sum with one file per duplicate group
+
+TABLE FEATURES:
+- Sorting: Duplicates first (grouped together), then alphabetical
+- Color Coding: 10 rotating colors for duplicate groups
+- Actions Column: Warning icon, play button, favorite star
+- Progress Column: Individual progress bar + current time display
+- Status Column: ✓ for playable, ⚠️ Unplayable badge for codec issues
+- Group Column: "Group N" for duplicates, "-" for unique files
+
+BROWSER COMPATIBILITY:
+- Requires: FileReader API, Audio API, localStorage
+- Codec Support: Varies by browser (PCM, ADPCM, etc.)
+- Error Handling: Detects unsupported codecs, shows "Unplayable" badge
+- Modern Browsers: Chrome, Firefox, Edge, Safari
+
+WORKFLOW:
+1. User drags/drops WAV files (or uses file picker)
+2. Tool validates files (WAV only), rejects non-WAV with notification
+3. Tool extracts duration and checks playability for each file
+4. Tool finds duplicates based on size, duration, name similarity
+5. Table displays files grouped by duplicates (color-coded)
+6. User can play files, favorite them, mark them as played
+7. User toggles "Consider Names" to adjust duplicate detection
+8. User clicks "Consolidate Deleted" to remove inaccessible files
+9. User favorites persist across page reloads via localStorage
+
+DESIGN AESTHETIC:
+- Dark Mode: Cyberpunk-inspired with cyan/magenta gradients
+- Color Scheme: Black background, cyan accents, magenta highlights
+- Typography: Monospace for technical data (size, duration)
+- Shadows: Neon glow effects on interactive elements
+- Scrollbar: Custom-styled with cyan borders
+
+CORRECTIONS & CLARIFICATIONS:
+- Initially thought: This tool compares audio waveforms
+- Actually: Uses metadata comparison (size, duration, filename)
+- Why this matters: Does not detect re-encoded files with different sizes
+
+- Initially thought: All WAV files are playable in browser
+- Actually: Browser codec support varies (ADPCM, μ-law, etc. may fail)
+- Why this matters: Tool detects and warns about unplayable files
+
+- Initially thought: Consolidate Deleted checks filesystem
+- Actually: Attempts to read file data to detect if file is still accessible
+- Why this matters: Files deleted outside browser still show until consolidation
+
+- Initially thought: Duplicate groups are permanent
+- Actually: Re-calculated when "Consider Names" toggle changes
+- Why this matters: User can adjust duplicate sensitivity in real-time
+
+NOTES:
+- WAV file size is usually a good duplicate indicator (lossless format)
+- Duration matching allows for slight metadata differences
+- Name normalization handles common duplicate patterns from file systems
+- Unplayable files can still be detected as duplicates (by size)
+- localStorage has ~5-10MB limit (fine for tracking IDs, not file data)
+- Consider adding: Hash-based comparison, batch delete, export duplicate report
+- Played songs tracking helps with large libraries (e.g., sample packs)
+- Individual progress bars allow quick preview/scrubbing without main player
+===

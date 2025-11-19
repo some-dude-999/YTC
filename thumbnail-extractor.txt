@@ -1,0 +1,146 @@
+=== thumbnail-extractor.txt ===
+PROJECT: YTC - YouTube Content Tools
+COMPONENT: Video Screenshot Extractor
+CREATED: 2025-11-19
+LAST UPDATED: 2025-11-19 - Initial documentation created
+
+DATA SOURCES:
+- User Input: Video files (drag-drop or file picker), target frame count
+- File: Browser File API (local video files)
+- API: HTML5 Video API for video playback and frame capture
+
+FUNCTIONALITY:
+- Main Purpose: Extract screenshots from videos at regular intervals
+- Key Functions:
+  * handleFiles(files) - Validates and processes uploaded video files
+  * captureFrame(videoElement, time) - Captures frame at specific timestamp
+  * processVideo() - Main processing loop for all videos
+  * createTabs() - Generates tab UI for multiple videos
+  * switchTab(index) - Changes active video tab
+  * addFrameToGrid(videoIndex, frame) - Renders frame card in real-time
+  * removeFrame(videoIndex, frameId) - Deletes individual frame
+  * downloadFrame(videoIndex, frameId) - Downloads frame as JPG
+- Event Handlers:
+  * Drag-and-drop video upload
+  * Tab switching for multiple videos
+  * Remove button per frame
+  * Download button per frame
+  * Scroll-to-top button
+
+DEPENDENCIES:
+- External Libraries: None (pure vanilla JavaScript)
+- Project Files: None (standalone HTML file)
+- APIs Required: HTML5 Video API, Canvas API, FileReader API
+
+INTEGRATION:
+- Receives data from: User video file uploads
+- Sends data to: Browser download (JPEG files)
+- Triggers: Video upload, "Extract Screenshots" button click
+
+TECHNICAL DETAILS:
+- Supported Formats: MP4, MOV, AVI, WebM (browser-dependent)
+- Frame Count: 10-5000 frames per video (default 1000)
+- Extraction Method: Evenly spaced intervals across video duration
+- Canvas Resolution: Native video resolution (width x height)
+- Export Format: JPEG (quality 0.92)
+- Filename Pattern: {videoName}_{minutes}m{seconds}s.jpg
+
+MULTI-VIDEO SUPPORT:
+- Upload: Supports multiple videos in one drag-drop or file selection
+- Tabs: Each video gets its own numbered tab
+- Independent Processing: Videos processed sequentially, not in parallel
+- Grids: Each video has separate screenshot grid
+- Tab UI: Active tab highlighted, shows video name and frame count
+
+EXTRACTION ALGORITHM:
+1. Get video duration from metadata
+2. Calculate interval: duration / targetFrames
+3. Seek to each timestamp (0, interval, 2*interval, ...)
+4. Wait for 'seeked' event
+5. Draw video frame to canvas
+6. Convert canvas to base64 JPEG data URL
+7. Render frame card immediately (real-time display)
+8. Repeat for all frames
+
+FRAME CARD FEATURES:
+- Thumbnail Preview: Displays extracted frame (200px height, auto width)
+- Timestamp Display: Shows extraction time (MM:SS or H:MM:SS format)
+- Remove Button: Red × button in top-right corner
+- Download Button: Green "Download JPG" button
+- Fade-in Animation: Cards animate in when created
+- Hover Effect: Card lifts up on mouse hover
+
+PROGRESS TRACKING:
+- Progress Bar: Visual percentage bar (0-100%)
+- Status Text: "Video X/Y: N/M frames"
+- Per-Video Progress: Shows current video being processed
+- Real-time Updates: Updates during extraction, not just at end
+- Completion Message: "Done! Processed X video(s)"
+
+GRID LAYOUT:
+- Responsive: 4 columns (desktop) → 3 (tablet) → 2 (mobile) → 1 (phone)
+- Breakpoints: 1200px, 768px, 480px
+- Gap: 25px spacing between cards
+- Scroll-to-top: Fixed button appears when scrolled >300px
+
+WORKFLOW:
+1. User uploads one or more video files
+2. Upload section updates to show "X video(s) loaded"
+3. User optionally adjusts frame count (default 1000)
+4. User clicks "Extract Screenshots"
+5. Tool creates tabs for each video
+6. Tool processes videos sequentially
+7. Frames appear in real-time as they're extracted
+8. User can switch tabs to view different videos
+9. User can remove unwanted frames
+10. User can download individual frames as JPG
+11. User can reset to start over
+
+BROWSER COMPATIBILITY:
+- Requires: HTML5 Video API, Canvas API, FileReader API
+- Video Codecs: Browser-dependent (H.264, VP8, VP9, etc.)
+- Modern Browsers: Chrome, Firefox, Edge, Safari
+- Mobile Support: Works on mobile browsers (responsive design)
+
+PERFORMANCE CONSIDERATIONS:
+- Frame Limit: Maximum 5000 frames per video (prevent memory issues)
+- Sequential Processing: Videos processed one at a time (not parallel)
+- Real-time Rendering: Frames added to DOM as extracted (no batching)
+- Memory Management: Uses data URLs (stored in memory, not disk)
+- Large Videos: May cause slowdown with 1000+ frames at high resolution
+
+VISUAL DESIGN:
+- Color Scheme: Purple gradient background (#667eea → #764ba2)
+- Card Style: White cards with rounded corners, soft shadows
+- Button Colors: Purple (primary), red (remove), green (download)
+- Animations: Fade-in for cards, lift-up on hover, smooth scrolling
+- Typography: Segoe UI system font stack
+
+CORRECTIONS & CLARIFICATIONS:
+- Initially thought: Frames extracted all at once, then displayed
+- Actually: Frames extracted and displayed in real-time during processing
+- Why this matters: User sees immediate feedback, feels faster
+
+- Initially thought: Canvas size fixed for all videos
+- Actually: Canvas adopts native video resolution for each frame
+- Why this matters: Preserves original quality, no forced scaling
+
+- Initially thought: Videos processed in parallel for speed
+- Actually: Videos processed sequentially (one at a time)
+- Why this matters: Prevents browser overload, more stable
+
+- Initially thought: Tab count unlimited
+- Actually: No hard limit on tabs, but DOM performance may degrade with 100+ videos
+- Why this matters: Users should batch process large video sets
+
+NOTES:
+- Default 1000 frames provides good coverage for most videos
+- JPEG quality 0.92 balances file size and visual quality
+- Video codec support varies by browser (H.265/HEVC often unsupported)
+- Timestamp format auto-adjusts for videos >1 hour (adds hours)
+- Frame removal uses fade-out animation (200ms transition)
+- Scroll-to-top button useful when extracting many frames
+- Consider adding: Batch download (ZIP), custom timestamp selection, frame quality slider
+- Data URLs stored in memory - extracting 5000 high-res frames may use significant RAM
+- No server upload - all processing happens client-side
+===
