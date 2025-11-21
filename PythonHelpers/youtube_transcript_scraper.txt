@@ -1,0 +1,85 @@
+=== YouTube Transcript Scraper ===
+PROJECT: YTC (YouTube Tools Collection)
+COMPONENT: YouTube Channel Transcript Scraper
+CREATED: 2025-11-21
+LAST UPDATED: 2025-11-21 - Initial creation
+
+DATA SOURCES:
+- API: YouTube Data API v3 - Retrieves channel videos, titles, and descriptions
+- API: YouTube Transcript API (youtube-transcript-api library) - Extracts video transcripts
+- User Input: YouTube channel URL/ID - Specifies which channel to scrape
+- Output File: VidsTranscript.csv - CSV file with 3 columns (title, description, transcript)
+
+FUNCTIONALITY:
+- Main Purpose: Extract all video metadata and transcripts from a YouTube channel and save to CSV
+- Key Functions:
+  * extract_channel_id() - Extracts channel ID from various YouTube URL formats
+  * get_channel_videos() - Uses YouTube Data API to retrieve all video IDs from a channel
+  * get_video_details() - Fetches video title and description for each video
+  * get_video_transcript() - Extracts transcript text using youtube-transcript-api
+  * save_to_csv() - Writes all collected data to VidsTranscript.csv
+- Error Handling:
+  * Handles videos without transcripts (marks as "No transcript available")
+  * Handles API quota limits and rate limiting
+  * Handles private/deleted videos
+
+DEPENDENCIES:
+- External Libraries:
+  * google-api-python-client - For YouTube Data API v3 access
+  * youtube-transcript-api - For extracting video transcripts
+  * pandas - For CSV manipulation and data handling
+- APIs Required:
+  * YouTube Data API v3 - Requires API key (user must provide)
+  * YouTube Transcript API - No key required, uses public transcript data
+
+INTEGRATION:
+- Standalone script that runs independently
+- Outputs: VidsTranscript.csv with columns [Video Title, Video Description, Transcript]
+- Can be run from command line with channel URL as parameter
+- No integration with other HTML tools in the repository
+
+USAGE:
+```bash
+# Install dependencies first
+pip install -r requirements.txt
+
+# Set YouTube API key as environment variable
+export YOUTUBE_API_KEY="your_api_key_here"
+
+# Or edit the script to hardcode your API key
+
+# Run the script
+python PythonHelpers/youtube_transcript_scraper.py
+```
+
+API KEY SETUP:
+1. Go to https://console.cloud.google.com/
+2. Create a new project or select existing
+3. Enable YouTube Data API v3
+4. Create credentials (API Key)
+5. Copy the API key and either:
+   - Set as environment variable: export YOUTUBE_API_KEY="your_key"
+   - Or hardcode in the script (less secure but simpler for personal use)
+
+CORRECTIONS & CLARIFICATIONS:
+- Initially planned to scrape without API, but YouTube Data API is the most reliable method
+- API has daily quota limits (10,000 units/day default), each video listing costs ~1 unit
+- Large channels may require multiple runs or quota increase
+- Transcripts are only available for videos that have them enabled
+
+NOTES:
+- The channel URL provided is: https://www.youtube.com/@RichAndLegit
+- Need to extract channel ID from this handle-based URL
+- Some videos may not have transcripts (disabled by creator or auto-generated unavailable)
+- The script will skip videos without transcripts and note them in the CSV
+- For very large channels (1000+ videos), consider adding pagination and resume capability
+- API key should be kept secure - use environment variables in production
+- Rate limiting: YouTube API has quota limits, script includes retry logic for rate limits
+
+FUTURE IMPROVEMENTS:
+- Add progress bar for long-running operations
+- Add resume capability for interrupted runs
+- Add filtering by date range or video count
+- Add support for multiple channels in one run
+- Add support for playlists in addition to channels
+===
