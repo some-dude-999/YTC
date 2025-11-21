@@ -8,6 +8,8 @@ This tool scrapes all videos from a YouTube channel and extracts:
 
 All data is saved to `VidsTranscript.csv`
 
+**NO API KEY REQUIRED!** This tool uses `yt-dlp` and `youtube-transcript-api` which work without any authentication.
+
 ## Setup
 
 ### 1. Install Dependencies
@@ -15,29 +17,7 @@ All data is saved to `VidsTranscript.csv`
 pip install -r requirements.txt
 ```
 
-### 2. Get YouTube API Key
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable **YouTube Data API v3**
-4. Go to Credentials → Create Credentials → API Key
-5. Copy your API key
-
-### 3. Set Your API Key
-
-**Option A: Environment Variable (Recommended)**
-```bash
-export YOUTUBE_API_KEY="your_api_key_here"
-```
-
-**Option B: Edit the Script**
-Open `youtube_transcript_scraper.py` and replace:
-```python
-YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', 'YOUR_API_KEY_HERE')
-```
-with:
-```python
-YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', 'your_actual_api_key')
-```
+That's it! No API keys or authentication needed.
 
 ## Usage
 

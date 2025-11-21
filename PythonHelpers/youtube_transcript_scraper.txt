@@ -25,12 +25,10 @@ FUNCTIONALITY:
 
 DEPENDENCIES:
 - External Libraries:
-  * google-api-python-client - For YouTube Data API v3 access
+  * yt-dlp - For fetching channel videos and metadata (NO API KEY NEEDED!)
   * youtube-transcript-api - For extracting video transcripts
-  * pandas - For CSV manipulation and data handling
 - APIs Required:
-  * YouTube Data API v3 - Requires API key (user must provide)
-  * YouTube Transcript API - No key required, uses public transcript data
+  * None! Both libraries work without authentication
 
 INTEGRATION:
 - Standalone script that runs independently
@@ -43,38 +41,30 @@ USAGE:
 # Install dependencies first
 pip install -r requirements.txt
 
-# Set YouTube API key as environment variable
-export YOUTUBE_API_KEY="your_api_key_here"
-
-# Or edit the script to hardcode your API key
-
-# Run the script
+# Run the script - NO API KEY NEEDED!
 python PythonHelpers/youtube_transcript_scraper.py
 ```
 
-API KEY SETUP:
-1. Go to https://console.cloud.google.com/
-2. Create a new project or select existing
-3. Enable YouTube Data API v3
-4. Create credentials (API Key)
-5. Copy the API key and either:
-   - Set as environment variable: export YOUTUBE_API_KEY="your_key"
-   - Or hardcode in the script (less secure but simpler for personal use)
+NO API KEY SETUP REQUIRED:
+This script uses yt-dlp which doesn't require any API keys or authentication.
+Just install the dependencies and run!
 
 CORRECTIONS & CLARIFICATIONS:
-- Initially planned to scrape without API, but YouTube Data API is the most reliable method
-- API has daily quota limits (10,000 units/day default), each video listing costs ~1 unit
-- Large channels may require multiple runs or quota increase
+- Initially tried YouTube Data API v3, but it required API keys and had quota limits
+- Switched to yt-dlp which is more reliable and requires NO API keys
+- yt-dlp handles channel scraping without authentication
 - Transcripts are only available for videos that have them enabled
+- The script works on local machines with proper internet access
+- May not work in restricted/sandbox environments with network proxies
 
 NOTES:
-- The channel URL provided is: https://www.youtube.com/@RichAndLegit
-- Need to extract channel ID from this handle-based URL
+- The channel URL configured by default is: https://www.youtube.com/@RichAndLegit
+- yt-dlp automatically handles @handle-based URLs
 - Some videos may not have transcripts (disabled by creator or auto-generated unavailable)
-- The script will skip videos without transcripts and note them in the CSV
-- For very large channels (1000+ videos), consider adding pagination and resume capability
-- API key should be kept secure - use environment variables in production
-- Rate limiting: YouTube API has quota limits, script includes retry logic for rate limits
+- The script will mark videos without transcripts in the CSV
+- For very large channels (1000+ videos), the script may take a while to run
+- No authentication or API keys required - completely free to use
+- Includes small delays between requests to avoid rate limiting
 
 FUTURE IMPROVEMENTS:
 - Add progress bar for long-running operations
