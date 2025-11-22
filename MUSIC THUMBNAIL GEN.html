@@ -356,6 +356,12 @@
                         <span>Show Brain Icons (🚀 Left / 🌈 Right)</span>
                     </label>
                 </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="showDividingLine" checked style="cursor: pointer;">
+                        <span>Show Dividing Line</span>
+                    </label>
+                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -621,7 +627,8 @@
             textColor: 'white',
             textTransform: 'none',
             subtitle: 'Sleep Music', // Default subtitle
-            showBrainIcons: true // Show rocket and rainbow icons
+            showBrainIcons: true, // Show rocket and rainbow icons
+            showDividingLine: true // Show dividing line between title and subtitle
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -680,6 +687,7 @@
         const transformLower = document.getElementById('transformLower');
         const transformTitle = document.getElementById('transformTitle');
         const showBrainIcons = document.getElementById('showBrainIcons');
+        const showDividingLine = document.getElementById('showDividingLine');
 
         // Load saved subtitle from localStorage
         const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
@@ -698,6 +706,13 @@
         if (savedBrainIcons !== null) {
             globalSettings.showBrainIcons = savedBrainIcons === 'true';
             showBrainIcons.checked = globalSettings.showBrainIcons;
+        }
+
+        // Load saved dividing line state from localStorage
+        const savedDividingLine = localStorage.getItem('showDividingLine');
+        if (savedDividingLine !== null) {
+            globalSettings.showDividingLine = savedDividingLine === 'true';
+            showDividingLine.checked = globalSettings.showDividingLine;
         }
 
         // Event listeners
@@ -773,6 +788,11 @@
         showBrainIcons.addEventListener('change', (e) => {
             globalSettings.showBrainIcons = e.target.checked;
             localStorage.setItem('showBrainIcons', e.target.checked);
+            updateAllPreviews();
+        });
+        showDividingLine.addEventListener('change', (e) => {
+            globalSettings.showDividingLine = e.target.checked;
+            localStorage.setItem('showDividingLine', e.target.checked);
             updateAllPreviews();
         });
         // Keyboard controls for fine-tuning
@@ -1489,13 +1509,15 @@
                             return charWidths.reduce((a, b) => a + b, 0) + (chars.length - 1) * (preview.letterSpacing * scaleFactor);
                         })() : ctx.measureText(text).width;
 
-                    // Draw dividing line between main title and subtitle
-                    const lineY = y + scaledFontSize * 0.4;
-                    const lineWidth = mainTextWidth;
-                    const lineThickness = 2 * scaleFactor;
+                    // Draw dividing line between main title and subtitle (if enabled)
+                    if (globalSettings.showDividingLine) {
+                        const lineY = y + scaledFontSize * 0.4;
+                        const lineWidth = mainTextWidth;
+                        const lineThickness = 2 * scaleFactor;
 
-                    ctx.fillStyle = globalSettings.textColor;
-                    ctx.fillRect(x - lineWidth / 2, lineY, lineWidth, lineThickness);
+                        ctx.fillStyle = globalSettings.textColor;
+                        ctx.fillRect(x - lineWidth / 2, lineY, lineWidth, lineThickness);
+                    }
 
                     // Set subtitle font (Arial)
                     ctx.font = `${subtitleFontSize}px "Arial"`;

@@ -46,12 +46,14 @@ TECHNICAL DETAILS:
 - Text Transformations: None, uppercase, lowercase, title case
 
 SUBTITLE FEATURE (Added 2025-11-22):
-- Position: Always appears below main title text with dividing line
+- Position: Always appears below main title text
 - Font: Fixed Arial font family
 - Case: Always uppercase (automatically converted)
 - Font Size: Fixed at 30px (scaled proportionally with resolution)
 - Width Matching: Dynamically adjusts letter-spacing to match main title width exactly
-- Dividing Line: Horizontal line (2px thick) drawn between title and subtitle, matching title width
+- Dividing Line: Optional horizontal line (2px thick) between title and subtitle, matching title width
+  * Toggle: Checkbox to show/hide dividing line (default: ON)
+  * Persistence: Toggle state saved to localStorage and restored on page load
 - Subtitle Options (via radio buttons):
   * Sleep Music
   * Sleep Sounds
