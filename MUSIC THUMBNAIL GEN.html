@@ -350,6 +350,12 @@
                         </label>
                     </div>
                 </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="showBrainIcons" checked style="cursor: pointer;">
+                        <span>Show Brain Icons (🚀 Left / 🌈 Right)</span>
+                    </label>
+                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -614,7 +620,8 @@
             effect: 'shadow', // 'shadow', 'glow', or 'none'
             textColor: 'white',
             textTransform: 'none',
-            subtitle: 'Sleep Music' // Default subtitle
+            subtitle: 'Sleep Music', // Default subtitle
+            showBrainIcons: true // Show rocket and rainbow icons
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -672,6 +679,7 @@
         const transformUpper = document.getElementById('transformUpper');
         const transformLower = document.getElementById('transformLower');
         const transformTitle = document.getElementById('transformTitle');
+        const showBrainIcons = document.getElementById('showBrainIcons');
 
         // Load saved subtitle from localStorage
         const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
@@ -683,6 +691,13 @@
                     radio.checked = true;
                 }
             });
+        }
+
+        // Load saved brain icons state from localStorage
+        const savedBrainIcons = localStorage.getItem('showBrainIcons');
+        if (savedBrainIcons !== null) {
+            globalSettings.showBrainIcons = savedBrainIcons === 'true';
+            showBrainIcons.checked = globalSettings.showBrainIcons;
         }
 
         // Event listeners
@@ -753,6 +768,11 @@
         });
         transformTitle.addEventListener('change', () => {
             globalSettings.textTransform = 'titlecase';
+            updateAllPreviews();
+        });
+        showBrainIcons.addEventListener('change', (e) => {
+            globalSettings.showBrainIcons = e.target.checked;
+            localStorage.setItem('showBrainIcons', e.target.checked);
             updateAllPreviews();
         });
         // Keyboard controls for fine-tuning
@@ -1518,6 +1538,40 @@
                     } else {
                         // If subtitle is wider than main text, just center it
                         ctx.fillText(subtitleText, x, subtitleY);
+                    }
+
+                    // Draw brain icons (rocket and rainbow)
+                    if (globalSettings.showBrainIcons) {
+                        const iconSize = scaledFontSize * 0.8; // Icons slightly smaller than main text
+                        const iconY = y; // Center icons vertically with the entire text block
+
+                        // Calculate text box bounds
+                        const textBoxLeft = x - mainTextWidth / 2;
+                        const textBoxRight = x + mainTextWidth / 2;
+                        const iconPadding = 20 * scaleFactor; // Padding between icons and text
+
+                        // Set font for emoji icons
+                        ctx.font = `${iconSize}px Arial`;
+
+                        // Apply same effects as main text
+                        if (globalSettings.effect === 'shadow') {
+                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                            ctx.shadowBlur = 15 * scaleFactor;
+                            ctx.shadowOffsetX = 5 * scaleFactor;
+                            ctx.shadowOffsetY = 5 * scaleFactor;
+                        } else if (globalSettings.effect === 'glow') {
+                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                            ctx.shadowBlur = 20 * scaleFactor;
+                            ctx.shadowOffsetX = 0;
+                            ctx.shadowOffsetY = 0;
+                        }
+
+                        // Draw rocket on the left (left brain)
+                        ctx.fillStyle = globalSettings.textColor;
+                        ctx.fillText('🚀', textBoxLeft - iconPadding - iconSize / 2, iconY);
+
+                        // Draw rainbow on the right (right brain)
+                        ctx.fillText('🌈', textBoxRight + iconPadding + iconSize / 2, iconY);
                     }
                 }
 
