@@ -46,19 +46,20 @@ TECHNICAL DETAILS:
 - Text Transformations: None, uppercase, lowercase, title case
 
 SUBTITLE FEATURE (Added 2025-11-22):
-- Position: Always appears below main title text
+- Position: Always appears below main title text with dividing line
 - Font: Fixed Arial font family
 - Case: Always uppercase (automatically converted)
 - Font Size: Fixed at 30px (scaled proportionally with resolution)
 - Width Matching: Dynamically adjusts letter-spacing to match main title width exactly
+- Dividing Line: Horizontal line (2px thick) drawn between title and subtitle, matching title width
 - Subtitle Options (via radio buttons):
-  * 10 Hours of Sleep Music
-  * 10 Hours of Sleep Sounds
-  * 10 Hours of Sleep Music + Sounds
-  * 2 Hours of Relaxing Music
-  * 2 Hours of Christmas Music
-  * 2 Hours of Halloween Music
-  * 2 Hours of Synthwave
+  * Sleep Music
+  * Sleep Sounds
+  * Sleep Music + Sounds
+  * Relaxing Music
+  * Christmas Music
+  * Halloween Music
+  * Synthwave
 - Persistence: Selection saved to localStorage and restored on page load
 - Effects: Inherits same text effects (shadow/glow/none) and color as main text
 - Dynamic Letter-Spacing Algorithm:

@@ -246,32 +246,32 @@
                 <label>Subtitle Text</label>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="10 Hours of Sleep Music" id="subtitle1" checked style="cursor: pointer;">
-                        <span>10 Hours of Sleep Music</span>
+                        <input type="radio" name="subtitle" value="Sleep Music" id="subtitle1" checked style="cursor: pointer;">
+                        <span>Sleep Music</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="10 Hours of Sleep Sounds" id="subtitle2" style="cursor: pointer;">
-                        <span>10 Hours of Sleep Sounds</span>
+                        <input type="radio" name="subtitle" value="Sleep Sounds" id="subtitle2" style="cursor: pointer;">
+                        <span>Sleep Sounds</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="10 Hours of Sleep Music + Sounds" id="subtitle3" style="cursor: pointer;">
-                        <span>10 Hours of Sleep Music + Sounds</span>
+                        <input type="radio" name="subtitle" value="Sleep Music + Sounds" id="subtitle3" style="cursor: pointer;">
+                        <span>Sleep Music + Sounds</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="2 Hours of Relaxing Music" id="subtitle4" style="cursor: pointer;">
-                        <span>2 Hours of Relaxing Music</span>
+                        <input type="radio" name="subtitle" value="Relaxing Music" id="subtitle4" style="cursor: pointer;">
+                        <span>Relaxing Music</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="2 Hours of Christmas Music" id="subtitle5" style="cursor: pointer;">
-                        <span>2 Hours of Christmas Music</span>
+                        <input type="radio" name="subtitle" value="Christmas Music" id="subtitle5" style="cursor: pointer;">
+                        <span>Christmas Music</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="2 Hours of Halloween Music" id="subtitle6" style="cursor: pointer;">
-                        <span>2 Hours of Halloween Music</span>
+                        <input type="radio" name="subtitle" value="Halloween Music" id="subtitle6" style="cursor: pointer;">
+                        <span>Halloween Music</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="radio" name="subtitle" value="2 Hours of Synthwave" id="subtitle7" style="cursor: pointer;">
-                        <span>2 Hours of Synthwave</span>
+                        <input type="radio" name="subtitle" value="Synthwave" id="subtitle7" style="cursor: pointer;">
+                        <span>Synthwave</span>
                     </label>
                 </div>
             </div>
@@ -614,7 +614,7 @@
             effect: 'shadow', // 'shadow', 'glow', or 'none'
             textColor: 'white',
             textTransform: 'none',
-            subtitle: '10 Hours of Sleep Music' // Default subtitle
+            subtitle: 'Sleep Music' // Default subtitle
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -1468,6 +1468,14 @@
                             const charWidths = chars.map(char => ctx.measureText(char).width);
                             return charWidths.reduce((a, b) => a + b, 0) + (chars.length - 1) * (preview.letterSpacing * scaleFactor);
                         })() : ctx.measureText(text).width;
+
+                    // Draw dividing line between main title and subtitle
+                    const lineY = y + scaledFontSize * 0.4;
+                    const lineWidth = mainTextWidth;
+                    const lineThickness = 2 * scaleFactor;
+
+                    ctx.fillStyle = globalSettings.textColor;
+                    ctx.fillRect(x - lineWidth / 2, lineY, lineWidth, lineThickness);
 
                     // Set subtitle font (Arial)
                     ctx.font = `${subtitleFontSize}px "Arial"`;
