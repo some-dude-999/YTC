@@ -46,14 +46,17 @@ TECHNICAL DETAILS:
 - Text Transformations: None, uppercase, lowercase, title case
 
 SUBTITLE FEATURE (Added 2025-11-22):
-- Position: Always appears below main title text
+- Position: Always appears below main title text (closer spacing)
 - Font: Fixed Arial font family
 - Case: Always uppercase (automatically converted)
-- Font Size: Fixed at 30px (scaled proportionally with resolution)
-- Width Matching: Dynamically adjusts letter-spacing to match main title width exactly
+- Font Size: Proportional to main title (37.5% ratio - scales with main title changes)
+  * Default: 30px when main title is 80px
+  * Example: If main title = 52px (65% of 80), subtitle = 19.5px (65% of 30)
+- Width Matching: Dynamically adjusts letter-spacing to be 92% of main title width (slightly narrower)
 - Dividing Line: Optional horizontal line (2px thick) between title and subtitle, matching title width
   * Toggle: Checkbox to show/hide dividing line (default: ON)
   * Persistence: Toggle state saved to localStorage and restored on page load
+  * Position: Closer to main title for tighter layout
 - Subtitle Options (via radio buttons):
   * Sleep Music
   * Sleep Sounds
@@ -66,10 +69,11 @@ SUBTITLE FEATURE (Added 2025-11-22):
 - Effects: Inherits same text effects (shadow/glow/none) and color as main text
 - Dynamic Letter-Spacing Algorithm:
   1. Measures main title width (including any letter spacing)
-  2. Measures subtitle base width (all characters without spacing)
-  3. Calculates required letter-spacing: (mainWidth - subtitleWidth) / (numChars - 1)
-  4. Renders each character individually with calculated spacing to match main title width
-  5. If subtitle is naturally wider than main title, centers it without adjustment
+  2. Calculates target subtitle width as 92% of main title width
+  3. Measures subtitle base width (all characters without spacing)
+  4. Calculates required letter-spacing: (targetWidth - subtitleWidth) / (numChars - 1)
+  5. Renders each character individually with calculated spacing to match target width
+  6. If subtitle is naturally wider than target, centers it without adjustment
 
 BRAIN ICONS FEATURE (Added 2025-11-22):
 - Toggle: Checkbox to show/hide brain icons (default: ON)

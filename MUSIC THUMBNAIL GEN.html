@@ -1499,7 +1499,8 @@
                 // Draw subtitle
                 if (globalSettings.subtitle) {
                     const subtitleText = globalSettings.subtitle.toUpperCase();
-                    const subtitleFontSize = 30 * scaleFactor; // Fixed 30px font size
+                    // Subtitle size scales proportionally with main title (37.5% ratio)
+                    const subtitleFontSize = preview.fontSize * 0.375 * scaleFactor;
 
                     // Measure main text width
                     const mainTextWidth = preview.letterSpacing !== 0 ?
@@ -1511,7 +1512,7 @@
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
-                        const lineY = y + scaledFontSize * 0.4;
+                        const lineY = y + scaledFontSize * 0.3; // Closer to main title
                         const lineWidth = mainTextWidth;
                         const lineThickness = 2 * scaleFactor;
 
@@ -1522,20 +1523,23 @@
                     // Set subtitle font (Arial)
                     ctx.font = `${subtitleFontSize}px "Arial"`;
 
+                    // Target width: 92% of main text width (slightly narrower)
+                    const targetSubtitleWidth = mainTextWidth * 0.92;
+
                     // Measure subtitle text width without spacing
                     const subtitleChars = subtitleText.split('');
                     const subtitleCharWidths = subtitleChars.map(char => ctx.measureText(char).width);
                     const subtitleBaseWidth = subtitleCharWidths.reduce((a, b) => a + b, 0);
 
-                    // Calculate required letter spacing to match main text width
+                    // Calculate required letter spacing to match target width
                     let subtitleLetterSpacing = 0;
-                    if (subtitleChars.length > 1 && subtitleBaseWidth < mainTextWidth) {
+                    if (subtitleChars.length > 1 && subtitleBaseWidth < targetSubtitleWidth) {
                         // Calculate spacing needed between characters
-                        subtitleLetterSpacing = (mainTextWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
+                        subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Position subtitle below main text
-                    const subtitleY = y + scaledFontSize * 0.6 + subtitleFontSize * 0.6;
+                    // Position subtitle closer to main text
+                    const subtitleY = y + scaledFontSize * 0.45 + subtitleFontSize * 0.5;
 
                     // Apply same effects as main text
                     if (globalSettings.effect === 'shadow') {
@@ -1552,13 +1556,13 @@
 
                     // Draw subtitle with calculated letter spacing
                     if (subtitleLetterSpacing > 0) {
-                        let currentX = x - mainTextWidth / 2;
+                        let currentX = x - targetSubtitleWidth / 2;
                         subtitleChars.forEach((char, i) => {
                             ctx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
                             currentX += subtitleCharWidths[i] + subtitleLetterSpacing;
                         });
                     } else {
-                        // If subtitle is wider than main text, just center it
+                        // If subtitle is wider than target, just center it
                         ctx.fillText(subtitleText, x, subtitleY);
                     }
 
