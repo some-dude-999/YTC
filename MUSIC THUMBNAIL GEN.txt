@@ -69,6 +69,18 @@ SUBTITLE FEATURE (Added 2025-11-22):
   4. Renders each character individually with calculated spacing to match main title width
   5. If subtitle is naturally wider than main title, centers it without adjustment
 
+BRAIN ICONS FEATURE (Added 2025-11-22):
+- Toggle: Checkbox to show/hide brain icons (default: ON)
+- Left Icon: 🚀 Rocket (representing left brain - logic/analytical)
+- Right Icon: 🌈 Rainbow (representing right brain - creative/artistic)
+- Positioning: Icons placed on left and right sides of the entire text box (main title + line + subtitle)
+- Size: Icons scale at 80% of main title font size
+- Padding: 20px space between icons and text box edges
+- Color: Inherits same color as text (white or black)
+- Effects: Inherits same text effects (shadow/glow/none) as main text
+- Persistence: Toggle state saved to localStorage and restored on page load
+- Vertical Alignment: Icons centered vertically with the main title text
+
 MASTER TEMPLATE SYSTEM:
 - Arial Master Template: First preview card acts as master template
 - Default Settings: fontSize 80px, letterSpacing 0, textX 0.5, textY 0.5
