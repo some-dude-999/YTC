@@ -276,31 +276,96 @@
                 </div>
             </div>
             <div class="input-group">
-                <label>Font Style</label>
-                <select class="dropdown" id="categorySelect">
-                    <option value="all">All Fonts - Every Font Available</option>
-                    <option value="bold">Bold - Heavy & Impact</option>
-                    <option value="futuristic">Futuristic - EDM/Electronic</option>
-                    <option value="modern">Modern - Clean & Versatile</option>
-                    <option value="clean">Clean - Minimalist</option>
-                    <option value="condensed">Condensed - Long Titles</option>
-                    <option value="display">Display - Eye-Catching</option>
-                    <option value="elegant">Elegant - Classical/Jazz</option>
-                    <option value="script">Script - Chill/Lo-fi</option>
-                    <option value="retro">Retro - 80s/Synthwave</option>
-                    <option value="hiphop">Hip-Hop - Rap/Urban</option>
-                    <option value="minimal">Minimal - Clean Aesthetic</option>
-                    <option value="corporate">Corporate - Professional</option>
-                    <option value="grunge">Grunge - Rock/Edgy</option>
-                    <option value="rounded">Rounded - Friendly/Soft</option>
-                    <option value="techno">Techno - Electronic/Tech</option>
-                    <option value="halloween">🎃 Halloween - Spooky/Horror</option>
-                    <option value="christmas">🎄 Christmas - Festive/Holiday</option>
-                    <option value="synthwave">🌆 Synthwave - Retro Futurism</option>
-                    <option value="space">🚀 Space - Sci-Fi/Star Trek</option>
-                    <option value="medieval">⚔️ Medieval - Fantasy/Gothic</option>
-                    <option value="pirate">🏴‍☠️ Pirate - Nautical/Treasure</option>
-                </select>
+                <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Font Categories</span>
+                    <button class="btn" id="selectAllCategories" style="background: #0088ff; color: white; padding: 6px 12px;">Select All</button>
+                </label>
+                <div id="categoryCheckboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding: 10px; background: #333; border-radius: 5px;">
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="bold" checked style="cursor: pointer;">
+                        <span>Bold</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="futuristic" checked style="cursor: pointer;">
+                        <span>Futuristic</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="modern" checked style="cursor: pointer;">
+                        <span>Modern</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="clean" checked style="cursor: pointer;">
+                        <span>Clean</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="condensed" checked style="cursor: pointer;">
+                        <span>Condensed</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="display" checked style="cursor: pointer;">
+                        <span>Display</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="elegant" checked style="cursor: pointer;">
+                        <span>Elegant</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="script" checked style="cursor: pointer;">
+                        <span>Script</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="retro" checked style="cursor: pointer;">
+                        <span>Retro</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="hiphop" checked style="cursor: pointer;">
+                        <span>Hip-Hop</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="minimal" checked style="cursor: pointer;">
+                        <span>Minimal</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="corporate" checked style="cursor: pointer;">
+                        <span>Corporate</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="grunge" checked style="cursor: pointer;">
+                        <span>Grunge</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="rounded" checked style="cursor: pointer;">
+                        <span>Rounded</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="techno" checked style="cursor: pointer;">
+                        <span>Techno</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="halloween" checked style="cursor: pointer;">
+                        <span>🎃 Halloween</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="christmas" checked style="cursor: pointer;">
+                        <span>🎄 Christmas</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="synthwave" checked style="cursor: pointer;">
+                        <span>🌆 Synthwave</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="space" checked style="cursor: pointer;">
+                        <span>🚀 Space</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="medieval" checked style="cursor: pointer;">
+                        <span>⚔️ Medieval</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="pirate" checked style="cursor: pointer;">
+                        <span>🏴‍☠️ Pirate</span>
+                    </label>
+                </div>
             </div>
             <div class="input-group">
                 <label>Global Text Effects</label>
@@ -612,7 +677,7 @@
         const PREVIEW_WIDTH = 640;
         const PREVIEW_HEIGHT = 360;
         let currentImage = null;
-        let currentCategory = 'all';
+        let selectedCategories = new Set(); // Track which categories are selected
         let previews = [];
         let favorites = new Set(); // Track favorited fonts
         let fontCustomizations = {}; // Track customizations per font name
@@ -620,6 +685,11 @@
         let focusedPreview = null; // Track which preview object is focused
         let displayLimit = 40; // Number of fonts to display at once
         let totalFontsToShow = 0; // Total fonts available for current category
+
+        // Initialize with all categories selected
+        Object.keys(FONT_CATEGORIES).forEach(cat => {
+            if (cat !== 'all') selectedCategories.add(cat);
+        });
         
         // Global settings
         let globalSettings = {
@@ -664,7 +734,8 @@
         }
         // Elements
         const textInput = document.getElementById('textInput');
-        const categorySelect = document.getElementById('categorySelect');
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+        const selectAllCategoriesBtn = document.getElementById('selectAllCategories');
         const dropZone = document.getElementById('dropZone');
         const dropZoneContainer = document.getElementById('dropZoneContainer');
         const changeImageBtn = document.getElementById('changeImageBtn');
@@ -728,13 +799,37 @@
                 }
             });
         });
-        categorySelect.addEventListener('change', (e) => {
-            currentCategory = e.target.value;
+
+        // Add category checkbox listeners
+        categoryCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    selectedCategories.add(e.target.value);
+                } else {
+                    selectedCategories.delete(e.target.value);
+                }
+
+                if (currentImage) {
+                    // Clear focus when changing category
+                    focusedCanvas = null;
+                    focusedPreview = null;
+                    // Reset pagination
+                    displayLimit = 40;
+                    generatePreviews();
+                }
+            });
+        });
+
+        // Select All Categories button
+        selectAllCategoriesBtn.addEventListener('click', () => {
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                selectedCategories.add(checkbox.value);
+            });
+
             if (currentImage) {
-                // Clear focus when changing category
                 focusedCanvas = null;
                 focusedPreview = null;
-                // Reset pagination
                 displayLimit = 40;
                 generatePreviews();
             }
@@ -914,8 +1009,14 @@
             resetBtn.classList.add('hidden');
             relinkBtn.classList.add('hidden');
             textInput.value = '';
-            categorySelect.value = 'all';
-            currentCategory = 'all';
+
+            // Reset category checkboxes to all checked
+            selectedCategories.clear();
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                selectedCategories.add(checkbox.value);
+            });
+
             globalShadow.checked = true;
             globalGlow.checked = false;
             globalNone.checked = false;
@@ -924,7 +1025,10 @@
             globalSettings = {
                 effect: 'shadow',
                 textColor: 'white',
-                textTransform: 'none'
+                textTransform: 'none',
+                subtitle: 'Sleep Music',
+                showBrainIcons: true,
+                showDividingLine: true
             };
             masterTemplate = {
                 fontSize: 80,
@@ -964,17 +1068,24 @@
         }
         function generatePreviews() {
             const allFonts = FONT_CATEGORIES.all;
-            const categoryFonts = FONT_CATEGORIES[currentCategory];
-            
-            // Sort fonts: category fonts first, then others
+
+            // Get fonts from all selected categories
+            let selectedFonts = new Set();
+            selectedCategories.forEach(category => {
+                if (FONT_CATEGORIES[category]) {
+                    FONT_CATEGORIES[category].forEach(font => selectedFonts.add(font));
+                }
+            });
+
+            // Convert to array and sort (selected fonts first, then others)
             let sortedFonts;
-            if (currentCategory === 'all') {
+            if (selectedFonts.size === 0 || selectedCategories.size === Object.keys(FONT_CATEGORIES).length - 1) {
+                // If no categories selected or all selected, show all fonts
                 sortedFonts = allFonts;
             } else {
-                const categorySet = new Set(categoryFonts);
-                const inCategory = allFonts.filter(f => categorySet.has(f));
-                const notInCategory = allFonts.filter(f => !categorySet.has(f));
-                sortedFonts = [...inCategory, ...notInCategory];
+                const inSelected = allFonts.filter(f => selectedFonts.has(f));
+                const notInSelected = allFonts.filter(f => !selectedFonts.has(f));
+                sortedFonts = [...inSelected, ...notInSelected];
             }
             
             // Create Arial master mockup first
