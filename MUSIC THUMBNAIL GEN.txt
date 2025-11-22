@@ -2,12 +2,13 @@
 PROJECT: YTC - YouTube Content Tools
 COMPONENT: YouTube Thumbnail Creator with Text
 CREATED: 2025-11-19
-LAST UPDATED: 2025-11-19 - Initial documentation created
+LAST UPDATED: 2025-11-22 - Added subtitle feature with dynamic letter-spacing
 
 DATA SOURCES:
-- User Input: Text overlay, font category, text effects, text color, text transformation
+- User Input: Text overlay, subtitle selection, font category, text effects, text color, text transformation
 - File: User-uploaded image (background for thumbnail)
 - External: Google Fonts API (560+ fonts loaded dynamically)
+- LocalStorage: Subtitle selection persistence
 
 FUNCTIONALITY:
 - Main Purpose: Create 1280x720 YouTube thumbnails with custom text in various fonts
@@ -44,6 +45,29 @@ TECHNICAL DETAILS:
 - Text Colors: White or black
 - Text Transformations: None, uppercase, lowercase, title case
 
+SUBTITLE FEATURE (Added 2025-11-22):
+- Position: Always appears below main title text
+- Font: Fixed Arial font family
+- Case: Always uppercase (automatically converted)
+- Font Size: Fixed at 30px (scaled proportionally with resolution)
+- Width Matching: Dynamically adjusts letter-spacing to match main title width exactly
+- Subtitle Options (via radio buttons):
+  * 10 Hours of Sleep Music
+  * 10 Hours of Sleep Sounds
+  * 10 Hours of Sleep Music + Sounds
+  * 2 Hours of Relaxing Music
+  * 2 Hours of Christmas Music
+  * 2 Hours of Halloween Music
+  * 2 Hours of Synthwave
+- Persistence: Selection saved to localStorage and restored on page load
+- Effects: Inherits same text effects (shadow/glow/none) and color as main text
+- Dynamic Letter-Spacing Algorithm:
+  1. Measures main title width (including any letter spacing)
+  2. Measures subtitle base width (all characters without spacing)
+  3. Calculates required letter-spacing: (mainWidth - subtitleWidth) / (numChars - 1)
+  4. Renders each character individually with calculated spacing to match main title width
+  5. If subtitle is naturally wider than main title, centers it without adjustment
+
 MASTER TEMPLATE SYSTEM:
 - Arial Master Template: First preview card acts as master template
 - Default Settings: fontSize 80px, letterSpacing 0, textX 0.5, textY 0.5
@@ -71,14 +95,17 @@ SLIDER CONTROLS (per preview):
 
 WORKFLOW:
 1. User uploads background image (drag-drop or click)
-2. Arial master template appears first
-3. All fonts render below (or filtered by category)
-4. User adjusts master template (text position, size, spacing)
-5. All non-customized fonts inherit master settings
-6. User can customize individual fonts (breaks link to master)
-7. User favorites preferred fonts (appear at top)
-8. User downloads selected thumbnails as 1280x720 PNG files
-9. "Relink All" resets all customizations to master template
+2. User enters main title text
+3. User selects subtitle option (choice persists via localStorage)
+4. Arial master template appears first
+5. All fonts render below (or filtered by category)
+6. User adjusts master template (text position, size, spacing)
+7. All non-customized fonts inherit master settings
+8. User can customize individual fonts (breaks link to master)
+9. User favorites preferred fonts (appear at top)
+10. Subtitle automatically adjusts letter-spacing to match main title width
+11. User downloads selected thumbnails as 1280x720 PNG files
+12. "Relink All" resets all customizations to master template
 
 BROWSER COMPATIBILITY:
 - Modern browsers with Canvas API support

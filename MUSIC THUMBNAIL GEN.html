@@ -234,13 +234,46 @@
         <div class="controls-section">
             <div class="input-group">
                 <label>Text to Display</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     class="text-input"
                     id="textInput"
                     value="YOUR TEXT HERE"
                     placeholder="Enter your text here..."
                 />
+            </div>
+            <div class="input-group">
+                <label>Subtitle Text</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="10 Hours of Sleep Music" id="subtitle1" checked style="cursor: pointer;">
+                        <span>10 Hours of Sleep Music</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="10 Hours of Sleep Sounds" id="subtitle2" style="cursor: pointer;">
+                        <span>10 Hours of Sleep Sounds</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="10 Hours of Sleep Music + Sounds" id="subtitle3" style="cursor: pointer;">
+                        <span>10 Hours of Sleep Music + Sounds</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="2 Hours of Relaxing Music" id="subtitle4" style="cursor: pointer;">
+                        <span>2 Hours of Relaxing Music</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="2 Hours of Christmas Music" id="subtitle5" style="cursor: pointer;">
+                        <span>2 Hours of Christmas Music</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="2 Hours of Halloween Music" id="subtitle6" style="cursor: pointer;">
+                        <span>2 Hours of Halloween Music</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="radio" name="subtitle" value="2 Hours of Synthwave" id="subtitle7" style="cursor: pointer;">
+                        <span>2 Hours of Synthwave</span>
+                    </label>
+                </div>
             </div>
             <div class="input-group">
                 <label>Font Style</label>
@@ -580,7 +613,8 @@
         let globalSettings = {
             effect: 'shadow', // 'shadow', 'glow', or 'none'
             textColor: 'white',
-            textTransform: 'none'
+            textTransform: 'none',
+            subtitle: '10 Hours of Sleep Music' // Default subtitle
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -638,8 +672,32 @@
         const transformUpper = document.getElementById('transformUpper');
         const transformLower = document.getElementById('transformLower');
         const transformTitle = document.getElementById('transformTitle');
+
+        // Load saved subtitle from localStorage
+        const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
+        if (savedSubtitle) {
+            globalSettings.subtitle = savedSubtitle;
+            // Check the corresponding radio button
+            document.querySelectorAll('input[name="subtitle"]').forEach(radio => {
+                if (radio.value === savedSubtitle) {
+                    radio.checked = true;
+                }
+            });
+        }
+
         // Event listeners
         textInput.addEventListener('keyup', updateAllPreviews);
+
+        // Add subtitle radio button listeners
+        document.querySelectorAll('input[name="subtitle"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    globalSettings.subtitle = e.target.value;
+                    localStorage.setItem('thumbnailSubtitle', e.target.value);
+                    updateAllPreviews();
+                }
+            });
+        });
         categorySelect.addEventListener('change', (e) => {
             currentCategory = e.target.value;
             if (currentImage) {
@@ -1397,6 +1455,64 @@
                 } else {
                     ctx.fillText(text, x, y);
                 }
+
+                // Draw subtitle
+                if (globalSettings.subtitle) {
+                    const subtitleText = globalSettings.subtitle.toUpperCase();
+                    const subtitleFontSize = 30 * scaleFactor; // Fixed 30px font size
+
+                    // Measure main text width
+                    const mainTextWidth = preview.letterSpacing !== 0 ?
+                        (() => {
+                            const chars = text.split('');
+                            const charWidths = chars.map(char => ctx.measureText(char).width);
+                            return charWidths.reduce((a, b) => a + b, 0) + (chars.length - 1) * (preview.letterSpacing * scaleFactor);
+                        })() : ctx.measureText(text).width;
+
+                    // Set subtitle font (Arial)
+                    ctx.font = `${subtitleFontSize}px "Arial"`;
+
+                    // Measure subtitle text width without spacing
+                    const subtitleChars = subtitleText.split('');
+                    const subtitleCharWidths = subtitleChars.map(char => ctx.measureText(char).width);
+                    const subtitleBaseWidth = subtitleCharWidths.reduce((a, b) => a + b, 0);
+
+                    // Calculate required letter spacing to match main text width
+                    let subtitleLetterSpacing = 0;
+                    if (subtitleChars.length > 1 && subtitleBaseWidth < mainTextWidth) {
+                        // Calculate spacing needed between characters
+                        subtitleLetterSpacing = (mainTextWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
+                    }
+
+                    // Position subtitle below main text
+                    const subtitleY = y + scaledFontSize * 0.6 + subtitleFontSize * 0.6;
+
+                    // Apply same effects as main text
+                    if (globalSettings.effect === 'shadow') {
+                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                        ctx.shadowBlur = 15 * scaleFactor;
+                        ctx.shadowOffsetX = 5 * scaleFactor;
+                        ctx.shadowOffsetY = 5 * scaleFactor;
+                    } else if (globalSettings.effect === 'glow') {
+                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                        ctx.shadowBlur = 20 * scaleFactor;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 0;
+                    }
+
+                    // Draw subtitle with calculated letter spacing
+                    if (subtitleLetterSpacing > 0) {
+                        let currentX = x - mainTextWidth / 2;
+                        subtitleChars.forEach((char, i) => {
+                            ctx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
+                            currentX += subtitleCharWidths[i] + subtitleLetterSpacing;
+                        });
+                    } else {
+                        // If subtitle is wider than main text, just center it
+                        ctx.fillText(subtitleText, x, subtitleY);
+                    }
+                }
+
                 // Reset shadow
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
