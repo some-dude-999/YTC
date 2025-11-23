@@ -1968,12 +1968,47 @@
 
                 const x = canvasWidth * preview.textX;
                 const y = canvasHeight * preview.textY;
-                // Apply effects using global settings
+
+                // Helper function to draw text with current letter spacing
+                const drawTextWithSpacing = (ctx, chars, charWidths, x, y, letterSpacing) => {
+                    if (letterSpacing !== 0) {
+                        const totalWidth = charWidths.reduce((a, b) => a + b, 0) +
+                                         (chars.length - 1) * letterSpacing;
+                        let currentX = x - totalWidth / 2;
+                        chars.forEach((char, i) => {
+                            ctx.fillText(char, currentX + charWidths[i] / 2, y);
+                            currentX += charWidths[i] + letterSpacing;
+                        });
+                    } else {
+                        ctx.fillText(text, x, y);
+                    }
+                };
+
+                // Apply dual shadow system for drop shadow effect
                 if (globalSettings.effect === 'shadow') {
+                    const chars = text.split('');
+                    const charWidths = chars.map(char => textCtx.measureText(char).width);
+                    const scaledLetterSpacing = preview.letterSpacing * scaleFactor;
+
+                    // Shadow 1: Outer feathered shadow (softer, less spread than before)
+                    textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)';
+                    textCtx.shadowBlur = 12 * scaleFactor;
+                    textCtx.shadowOffsetX = 6 * scaleFactor;
+                    textCtx.shadowOffsetY = 6 * scaleFactor;
+                    drawTextWithSpacing(textCtx, chars, charWidths, x, y, scaledLetterSpacing);
+
+                    // Shadow 2: Inner tight shadow (darker, right under the text to make it pop)
                     textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                    textCtx.shadowBlur = 25 * scaleFactor;
-                    textCtx.shadowOffsetX = 8 * scaleFactor;
-                    textCtx.shadowOffsetY = 8 * scaleFactor;
+                    textCtx.shadowBlur = 4 * scaleFactor;
+                    textCtx.shadowOffsetX = 2 * scaleFactor;
+                    textCtx.shadowOffsetY = 2 * scaleFactor;
+                    drawTextWithSpacing(textCtx, chars, charWidths, x, y, scaledLetterSpacing);
+
+                    // Reset shadow for actual text
+                    textCtx.shadowColor = 'transparent';
+                    textCtx.shadowBlur = 0;
+                    textCtx.shadowOffsetX = 0;
+                    textCtx.shadowOffsetY = 0;
                 } else if (globalSettings.effect === 'glow') {
                     textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                     textCtx.shadowBlur = 20 * scaleFactor;
@@ -2042,12 +2077,43 @@
                     // Position subtitle closer to main text
                     const subtitleY = y + scaledFontSize * 0.45 + subtitleFontSize * 0.5;
 
-                    // Apply same effects as main text
+                    // Apply dual shadow system for subtitle
                     if (globalSettings.effect === 'shadow') {
+                        // Shadow 1: Outer feathered shadow
+                        textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)';
+                        textCtx.shadowBlur = 12 * scaleFactor;
+                        textCtx.shadowOffsetX = 6 * scaleFactor;
+                        textCtx.shadowOffsetY = 6 * scaleFactor;
+                        if (subtitleLetterSpacing > 0) {
+                            let currentX = x - targetSubtitleWidth / 2;
+                            subtitleChars.forEach((char, i) => {
+                                textCtx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
+                                currentX += subtitleCharWidths[i] + subtitleLetterSpacing;
+                            });
+                        } else {
+                            textCtx.fillText(subtitleText, x, subtitleY);
+                        }
+
+                        // Shadow 2: Inner tight shadow
                         textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                        textCtx.shadowBlur = 25 * scaleFactor;
-                        textCtx.shadowOffsetX = 8 * scaleFactor;
-                        textCtx.shadowOffsetY = 8 * scaleFactor;
+                        textCtx.shadowBlur = 4 * scaleFactor;
+                        textCtx.shadowOffsetX = 2 * scaleFactor;
+                        textCtx.shadowOffsetY = 2 * scaleFactor;
+                        if (subtitleLetterSpacing > 0) {
+                            let currentX = x - targetSubtitleWidth / 2;
+                            subtitleChars.forEach((char, i) => {
+                                textCtx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
+                                currentX += subtitleCharWidths[i] + subtitleLetterSpacing;
+                            });
+                        } else {
+                            textCtx.fillText(subtitleText, x, subtitleY);
+                        }
+
+                        // Reset shadow for actual text
+                        textCtx.shadowColor = 'transparent';
+                        textCtx.shadowBlur = 0;
+                        textCtx.shadowOffsetX = 0;
+                        textCtx.shadowOffsetY = 0;
                     } else if (globalSettings.effect === 'glow') {
                         textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                         textCtx.shadowBlur = 20 * scaleFactor;
@@ -2055,7 +2121,7 @@
                         textCtx.shadowOffsetY = 0;
                     }
 
-                    // Draw subtitle with calculated letter spacing
+                    // Draw subtitle with calculated letter spacing (actual text on top)
                     if (subtitleLetterSpacing > 0) {
                         let currentX = x - targetSubtitleWidth / 2;
                         subtitleChars.forEach((char, i) => {
@@ -2079,13 +2145,34 @@
 
                         // Set font for emoji icons
                         textCtx.font = `${iconSize}px Arial`;
+                        textCtx.fillStyle = globalSettings.textColor;
 
-                        // Apply same effects as main text
+                        const rocketX = textBoxLeft - iconPadding - iconSize / 2;
+                        const rainbowX = textBoxRight + iconPadding + iconSize / 2;
+
+                        // Apply dual shadow system for icons
                         if (globalSettings.effect === 'shadow') {
+                            // Shadow 1: Outer feathered shadow for both icons
+                            textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)';
+                            textCtx.shadowBlur = 12 * scaleFactor;
+                            textCtx.shadowOffsetX = 6 * scaleFactor;
+                            textCtx.shadowOffsetY = 6 * scaleFactor;
+                            textCtx.fillText('🚀', rocketX, iconY);
+                            textCtx.fillText('🌈', rainbowX, iconY);
+
+                            // Shadow 2: Inner tight shadow for both icons
                             textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                            textCtx.shadowBlur = 25 * scaleFactor;
-                            textCtx.shadowOffsetX = 8 * scaleFactor;
-                            textCtx.shadowOffsetY = 8 * scaleFactor;
+                            textCtx.shadowBlur = 4 * scaleFactor;
+                            textCtx.shadowOffsetX = 2 * scaleFactor;
+                            textCtx.shadowOffsetY = 2 * scaleFactor;
+                            textCtx.fillText('🚀', rocketX, iconY);
+                            textCtx.fillText('🌈', rainbowX, iconY);
+
+                            // Reset shadow for actual icons
+                            textCtx.shadowColor = 'transparent';
+                            textCtx.shadowBlur = 0;
+                            textCtx.shadowOffsetX = 0;
+                            textCtx.shadowOffsetY = 0;
                         } else if (globalSettings.effect === 'glow') {
                             textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                             textCtx.shadowBlur = 20 * scaleFactor;
@@ -2093,12 +2180,11 @@
                             textCtx.shadowOffsetY = 0;
                         }
 
-                        // Draw rocket on the left (left brain)
-                        textCtx.fillStyle = globalSettings.textColor;
-                        textCtx.fillText('🚀', textBoxLeft - iconPadding - iconSize / 2, iconY);
+                        // Draw rocket on the left (left brain) - actual icons on top
+                        textCtx.fillText('🚀', rocketX, iconY);
 
                         // Draw rainbow on the right (right brain)
-                        textCtx.fillText('🌈', textBoxRight + iconPadding + iconSize / 2, iconY);
+                        textCtx.fillText('🌈', rainbowX, iconY);
                     }
                 }
 
