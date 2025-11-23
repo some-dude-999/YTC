@@ -1134,8 +1134,11 @@
 
             // Convert to array and sort (selected fonts first, then others)
             let sortedFonts;
-            if (selectedFonts.size === 0 || selectedCategories.size === Object.keys(FONT_CATEGORIES).length - 1) {
-                // If no categories selected or all selected, show all fonts
+            if (selectedFonts.size === 0) {
+                // If no categories selected, show no fonts (only master template)
+                sortedFonts = [];
+            } else if (selectedCategories.size === Object.keys(FONT_CATEGORIES).length - 1) {
+                // If all categories selected, show all fonts
                 sortedFonts = allFonts;
             } else {
                 const inSelected = allFonts.filter(f => selectedFonts.has(f));
