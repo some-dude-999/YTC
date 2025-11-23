@@ -2079,6 +2079,10 @@
                     // Subtitle size scales proportionally with main title (37.5% ratio)
                     const subtitleFontSize = preview.fontSize * 0.375 * scaleFactor;
 
+                    // Get main title bounding box metrics for spacing
+                    const mainMetrics = textCtx.measureText(text);
+                    const mainDescent = mainMetrics.actualBoundingBoxDescent;
+
                     // Measure main text width
                     const mainTextWidth = preview.letterSpacing !== 0 ?
                         (() => {
@@ -2117,12 +2121,16 @@
                         subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Position subtitle with fixed 6px gap
-                    // Main title bottom = y + (scaledFontSize / 2)
-                    // Subtitle top = main title bottom + 6px
-                    // Subtitle center = subtitle top + (subtitleFontSize / 2)
+                    // Get subtitle bounding box metrics for accurate positioning
+                    const subMetrics = textCtx.measureText(subtitleText);
+                    const subAscent = subMetrics.actualBoundingBoxAscent;
+
+                    // Position subtitle with fixed 6px gap between bounding boxes
+                    // Main title bottom = y + mainDescent
+                    // Subtitle top = main title bottom + 6px gap
+                    // Subtitle center Y = subtitle top + subAscent
                     const gap = 6 * scaleFactor;
-                    const subtitleY = y + (scaledFontSize / 2) + gap + (subtitleFontSize / 2);
+                    const subtitleY = y + mainDescent + gap + subAscent;
 
                     // Apply dual shadow system for subtitle
                     if (globalSettings.effect === 'shadow') {
