@@ -1111,18 +1111,7 @@
             handleImageUpload(e.target.files[0]);
         });
         changeImageBtn.addEventListener('click', () => {
-            currentImage = null;
-            previews = [];
-            fontCustomizations = {};
-            focusedCanvas = null;
-            focusedPreview = null;
-            previewsGrid.innerHTML = '';
-            favoritesGrid.innerHTML = '';
-            favoritesSection.style.display = 'none';
-            dropZoneContainer.classList.remove('hidden');
-            changeImageBtn.classList.add('hidden');
-            resetBtn.classList.add('hidden');
-            relinkBtn.classList.add('hidden');
+            fileInput.click();
         });
         resetBtn.addEventListener('click', () => {
             // Reset everything
