@@ -716,6 +716,19 @@
             document.head.appendChild(link);
         }
         loadGoogleFonts();
+
+        // Helper function to get categories for a font
+        function getFontCategories(fontName) {
+            const categories = [];
+            Object.keys(FONT_CATEGORIES).forEach(category => {
+                if (category !== 'all' && FONT_CATEGORIES[category].includes(fontName)) {
+                    // Capitalize first letter of category name
+                    const displayName = category.charAt(0).toUpperCase() + category.slice(1);
+                    categories.push(displayName);
+                }
+            });
+            return categories;
+        }
         function applyTextTransform(text, transform) {
             if (!text) return text;
             
@@ -1203,10 +1216,14 @@
                 fontText.textContent = '🎯 MASTER TEMPLATE (Arial)';
                 fontText.style.color = '#ff0000';
             } else if (preview.isFavorite) {
-                fontText.textContent = preview.font;
+                const categories = getFontCategories(preview.font);
+                const categoriesText = categories.length > 0 ? ` - ${categories.join(', ')}` : '';
+                fontText.textContent = preview.font + categoriesText;
                 fontText.style.color = 'gold';
             } else {
-                fontText.textContent = preview.font;
+                const categories = getFontCategories(preview.font);
+                const categoriesText = categories.length > 0 ? ` - ${categories.join(', ')}` : '';
+                fontText.textContent = preview.font + categoriesText;
             }
             fontName.appendChild(fontText);
             
