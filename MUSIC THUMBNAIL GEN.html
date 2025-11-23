@@ -440,6 +440,16 @@
                         <span>Show Bounding Boxes (Debug)</span>
                     </label>
                 </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px;">Title-Subtitle Spacing:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button id="spacingLess" style="padding: 5px 15px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Less (15px)</button>
+                        <button id="spacingNormal" style="padding: 5px 15px; background: #0088ff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Normal (30px)</button>
+                        <button id="spacingMore" style="padding: 5px 15px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">More (50px)</button>
+                    </div>
+                    <input type="range" id="subtitleSpacingSlider" min="0" max="100" value="30" style="width: 100%; cursor: pointer;">
+                    <div style="text-align: center; color: #aaa; font-size: 12px; margin-top: 5px;" id="spacingValue">30px</div>
+                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -729,7 +739,8 @@
             subtitle: 'Sleep Music', // Default subtitle
             showBrainIcons: true, // Show rocket and rainbow icons
             showDividingLine: true, // Show dividing line between title and subtitle
-            showBoundingBoxes: false // Show bounding boxes for debugging (preview only)
+            showBoundingBoxes: false, // Show bounding boxes for debugging (preview only)
+            subtitleSpacing: 30 // Spacing between title and subtitle in pixels
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -737,9 +748,7 @@
             letterSpacing: 0,
             textX: 0.5,
             textY: 0.5,
-            masterOpacity: 100,
-            topFade: 0,
-            bottomFade: 0
+            masterOpacity: 100
         };
         // Load fonts
         function loadGoogleFonts() {
@@ -840,6 +849,16 @@
         if (savedBoundingBoxes !== null) {
             globalSettings.showBoundingBoxes = savedBoundingBoxes === 'true';
             showBoundingBoxes.checked = globalSettings.showBoundingBoxes;
+        }
+
+        // Load saved subtitle spacing from localStorage
+        const savedSpacing = localStorage.getItem('subtitleSpacing');
+        if (savedSpacing !== null) {
+            const spacing = parseInt(savedSpacing);
+            globalSettings.subtitleSpacing = spacing;
+            subtitleSpacingSlider.value = spacing;
+            spacingValue.textContent = `${spacing}px`;
+            updateSpacingButtons(spacing);
         }
 
         // Function to calculate optimal font size for 65% canvas width
@@ -1019,6 +1038,56 @@
             localStorage.setItem('showBoundingBoxes', e.target.checked);
             updateAllPreviews();
         });
+
+        // Subtitle spacing controls
+        const subtitleSpacingSlider = document.getElementById('subtitleSpacingSlider');
+        const spacingValue = document.getElementById('spacingValue');
+        const spacingLess = document.getElementById('spacingLess');
+        const spacingNormal = document.getElementById('spacingNormal');
+        const spacingMore = document.getElementById('spacingMore');
+
+        function updateSpacingButtons(value) {
+            spacingLess.style.background = value === 15 ? '#0088ff' : '#444';
+            spacingNormal.style.background = value === 30 ? '#0088ff' : '#444';
+            spacingMore.style.background = value === 50 ? '#0088ff' : '#444';
+        }
+
+        subtitleSpacingSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            globalSettings.subtitleSpacing = value;
+            spacingValue.textContent = `${value}px`;
+            updateSpacingButtons(value);
+            localStorage.setItem('subtitleSpacing', value);
+            updateAllPreviews();
+        });
+
+        spacingLess.addEventListener('click', () => {
+            subtitleSpacingSlider.value = 15;
+            globalSettings.subtitleSpacing = 15;
+            spacingValue.textContent = '15px';
+            updateSpacingButtons(15);
+            localStorage.setItem('subtitleSpacing', 15);
+            updateAllPreviews();
+        });
+
+        spacingNormal.addEventListener('click', () => {
+            subtitleSpacingSlider.value = 30;
+            globalSettings.subtitleSpacing = 30;
+            spacingValue.textContent = '30px';
+            updateSpacingButtons(30);
+            localStorage.setItem('subtitleSpacing', 30);
+            updateAllPreviews();
+        });
+
+        spacingMore.addEventListener('click', () => {
+            subtitleSpacingSlider.value = 50;
+            globalSettings.subtitleSpacing = 50;
+            spacingValue.textContent = '50px';
+            updateSpacingButtons(50);
+            localStorage.setItem('subtitleSpacing', 50);
+            updateAllPreviews();
+        });
+
         // Keyboard controls for fine-tuning
         let keyboardMovedMaster = false; // Track if master was moved during keydown
         
@@ -1066,9 +1135,7 @@
                             letterSpacing: focusedPreview.letterSpacing,
                             textX: focusedPreview.textX,
                             textY: focusedPreview.textY,
-                            masterOpacity: focusedPreview.masterOpacity,
-                            topFade: focusedPreview.topFade,
-                            bottomFade: focusedPreview.bottomFade
+                            masterOpacity: focusedPreview.masterOpacity
                         };
                     }
                     fontCustomizations[focusedPreview.font].textX = focusedPreview.textX;
@@ -1167,9 +1234,7 @@
                 letterSpacing: 0,
                 textX: 0.5,
                 textY: 0.5,
-                masterOpacity: 100,
-                topFade: 0,
-                bottomFade: 0
+                masterOpacity: 100
             };
         });
         relinkBtn.addEventListener('click', () => {
@@ -1235,9 +1300,7 @@
                 letterSpacing: masterTemplate.letterSpacing,
                 textX: masterTemplate.textX,
                 textY: masterTemplate.textY,
-                masterOpacity: masterTemplate.masterOpacity,
-                topFade: masterTemplate.topFade,
-                bottomFade: masterTemplate.bottomFade
+                masterOpacity: masterTemplate.masterOpacity
             }];
             // Add all fonts
             previews = previews.concat(sortedFonts.map(font => {
@@ -1251,9 +1314,7 @@
                         letterSpacing: custom.letterSpacing,
                         textX: custom.textX,
                         textY: custom.textY,
-                        masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
-                        topFade: custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade,
-                        bottomFade: custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade
+                        masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity
                     };
                 } else {
                     return {
@@ -1263,9 +1324,7 @@
                         letterSpacing: masterTemplate.letterSpacing,
                         textX: masterTemplate.textX,
                         textY: masterTemplate.textY,
-                        masterOpacity: masterTemplate.masterOpacity,
-                        topFade: masterTemplate.topFade,
-                        bottomFade: masterTemplate.bottomFade
+                        masterOpacity: masterTemplate.masterOpacity
                     };
                 }
             }));
@@ -1291,9 +1350,7 @@
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
                         textY: custom ? custom.textY : masterTemplate.textY,
-                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
-                        topFade: custom ? (custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade) : masterTemplate.topFade,
-                        bottomFade: custom ? (custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade) : masterTemplate.bottomFade
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity
                     };
 
                     const card = createPreviewCard(preview, font); // Use font name as identifier
@@ -1435,9 +1492,7 @@
                                 letterSpacing: preview.letterSpacing,
                                 textX: preview.textX,
                                 textY: preview.textY,
-                                masterOpacity: preview.masterOpacity,
-                                topFade: preview.topFade,
-                                bottomFade: preview.bottomFade
+                                masterOpacity: preview.masterOpacity
                             };
                         }
                         fontCustomizations[preview.font].textX = newX;
@@ -1509,8 +1564,6 @@
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
                     preview.masterOpacity = masterTemplate.masterOpacity;
-                    preview.topFade = masterTemplate.topFade;
-                    preview.bottomFade = masterTemplate.bottomFade;
 
                     // Redraw canvas
                     drawCanvas(canvas, preview);
@@ -1519,8 +1572,6 @@
                     const sizeSlider = card.querySelector('input[type="range"][min="20"]');
                     const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
                     const opacitySlider = card.querySelector('input[type="range"][min="0"][max="100"]');
-                    const topFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[1];
-                    const bottomFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[2];
                     const sizeLabel = card.querySelector('.slider-group:first-child label');
                     const spacingLabel = card.querySelector('.slider-group:last-child label');
 
@@ -1536,16 +1587,6 @@
                         opacitySlider.value = masterTemplate.masterOpacity;
                         const opacityLabel = card.querySelectorAll('label')[2];
                         if (opacityLabel) opacityLabel.textContent = `Opacity: ${masterTemplate.masterOpacity}%`;
-                    }
-                    if (topFadeSliderEl) {
-                        topFadeSliderEl.value = masterTemplate.topFade;
-                        const topFadeLabel = card.querySelectorAll('label')[3];
-                        if (topFadeLabel) topFadeLabel.textContent = `Top Fade: ${masterTemplate.topFade}%`;
-                    }
-                    if (bottomFadeSliderEl) {
-                        bottomFadeSliderEl.value = masterTemplate.bottomFade;
-                        const bottomFadeLabel = card.querySelectorAll('label')[4];
-                        if (bottomFadeLabel) bottomFadeLabel.textContent = `Bottom Fade: ${masterTemplate.bottomFade}%`;
                     }
 
                     // Update linked font if in favorites
@@ -1691,9 +1732,7 @@
                             letterSpacing: preview.letterSpacing,
                             textX: preview.textX,
                             textY: preview.textY,
-                            masterOpacity: preview.masterOpacity,
-                            topFade: preview.topFade,
-                            bottomFade: preview.bottomFade
+                            masterOpacity: preview.masterOpacity
                         };
                     }
                     fontCustomizations[preview.font].masterOpacity = newOpacity;
@@ -1710,109 +1749,7 @@
             masterOpacityGroup.appendChild(masterOpacityLabel);
             masterOpacityGroup.appendChild(masterOpacitySlider);
 
-            // Top Fade
-            const topFadeGroup = document.createElement('div');
-            topFadeGroup.style.width = '100%';
-            const topFadeLabel = document.createElement('label');
-            topFadeLabel.textContent = `Top Fade: ${preview.topFade}%`;
-            topFadeLabel.style.fontSize = '10px';
-            topFadeLabel.style.color = '#aaa';
-            topFadeLabel.style.marginBottom = '3px';
-            topFadeLabel.style.display = 'block';
-            const topFadeSlider = document.createElement('input');
-            topFadeSlider.type = 'range';
-            topFadeSlider.className = 'slider';
-            topFadeSlider.min = '0';
-            topFadeSlider.max = '100';
-            topFadeSlider.value = preview.topFade;
-            topFadeSlider.style.width = '100%';
-            topFadeSlider.addEventListener('input', (e) => {
-                const newFade = parseInt(e.target.value);
-                topFadeLabel.textContent = `Top Fade: ${e.target.value}%`;
-
-                if (preview.isMaster) {
-                    masterTemplate.topFade = newFade;
-                    preview.topFade = newFade;
-                    drawCanvas(canvas, preview);
-                } else {
-                    if (!fontCustomizations[preview.font]) {
-                        fontCustomizations[preview.font] = {
-                            fontSize: preview.fontSize,
-                            letterSpacing: preview.letterSpacing,
-                            textX: preview.textX,
-                            textY: preview.textY,
-                            masterOpacity: preview.masterOpacity,
-                            topFade: preview.topFade,
-                            bottomFade: preview.bottomFade
-                        };
-                    }
-                    fontCustomizations[preview.font].topFade = newFade;
-                    preview.topFade = newFade;
-                    drawCanvas(canvas, preview);
-                    updateLinkedFont(preview.font);
-                }
-            });
-            if (preview.isMaster) {
-                topFadeSlider.addEventListener('change', () => {
-                    updateNonCustomizedPreviews();
-                });
-            }
-            topFadeGroup.appendChild(topFadeLabel);
-            topFadeGroup.appendChild(topFadeSlider);
-
-            // Bottom Fade
-            const bottomFadeGroup = document.createElement('div');
-            bottomFadeGroup.style.width = '100%';
-            const bottomFadeLabel = document.createElement('label');
-            bottomFadeLabel.textContent = `Bottom Fade: ${preview.bottomFade}%`;
-            bottomFadeLabel.style.fontSize = '10px';
-            bottomFadeLabel.style.color = '#aaa';
-            bottomFadeLabel.style.marginBottom = '3px';
-            bottomFadeLabel.style.display = 'block';
-            const bottomFadeSlider = document.createElement('input');
-            bottomFadeSlider.type = 'range';
-            bottomFadeSlider.className = 'slider';
-            bottomFadeSlider.min = '0';
-            bottomFadeSlider.max = '100';
-            bottomFadeSlider.value = preview.bottomFade;
-            bottomFadeSlider.style.width = '100%';
-            bottomFadeSlider.addEventListener('input', (e) => {
-                const newFade = parseInt(e.target.value);
-                bottomFadeLabel.textContent = `Bottom Fade: ${e.target.value}%`;
-
-                if (preview.isMaster) {
-                    masterTemplate.bottomFade = newFade;
-                    preview.bottomFade = newFade;
-                    drawCanvas(canvas, preview);
-                } else {
-                    if (!fontCustomizations[preview.font]) {
-                        fontCustomizations[preview.font] = {
-                            fontSize: preview.fontSize,
-                            letterSpacing: preview.letterSpacing,
-                            textX: preview.textX,
-                            textY: preview.textY,
-                            masterOpacity: preview.masterOpacity,
-                            topFade: preview.topFade,
-                            bottomFade: preview.bottomFade
-                        };
-                    }
-                    fontCustomizations[preview.font].bottomFade = newFade;
-                    preview.bottomFade = newFade;
-                    drawCanvas(canvas, preview);
-                    updateLinkedFont(preview.font);
-                }
-            });
-            if (preview.isMaster) {
-                bottomFadeSlider.addEventListener('change', () => {
-                    updateNonCustomizedPreviews();
-                });
-            }
-            bottomFadeGroup.appendChild(bottomFadeLabel);
-            bottomFadeGroup.appendChild(bottomFadeSlider);
-
             controlsRow3.appendChild(masterOpacityGroup);
-            controlsRow3.appendChild(topFadeGroup);
-            controlsRow3.appendChild(bottomFadeGroup);
             card.appendChild(controlsRow3);
 
             return card;
@@ -1834,8 +1771,6 @@
                     previews[previewIndex].textX = custom.textX;
                     previews[previewIndex].textY = custom.textY;
                     previews[previewIndex].masterOpacity = custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity;
-                    previews[previewIndex].topFade = custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade;
-                    previews[previewIndex].bottomFade = custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade;
                     drawCanvas(mainCanvas, previews[previewIndex]);
 
                     // Update sliders
@@ -1864,9 +1799,7 @@
                     letterSpacing: custom.letterSpacing,
                     textX: custom.textX,
                     textY: custom.textY,
-                    masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
-                    topFade: custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade,
-                    bottomFade: custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade
+                    masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity
                 };
                 drawCanvas(favCanvas, favPreview);
 
@@ -1879,8 +1812,6 @@
             const sizeSlider = card.querySelector('input[type="range"][min="20"]');
             const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
             const opacitySlider = card.querySelector('input[type="range"][min="0"][max="100"]');
-            const topFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[1];
-            const bottomFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[2];
             const sizeLabel = card.querySelector('.slider-group:first-child label');
             const spacingLabel = card.querySelector('.slider-group:last-child label');
 
@@ -1897,16 +1828,6 @@
                 const opacityLabel = card.querySelectorAll('label')[2];
                 if (opacityLabel) opacityLabel.textContent = `Opacity: ${custom.masterOpacity}%`;
             }
-            if (topFadeSliderEl && custom.topFade !== undefined) {
-                topFadeSliderEl.value = custom.topFade;
-                const topFadeLabel = card.querySelectorAll('label')[3];
-                if (topFadeLabel) topFadeLabel.textContent = `Top Fade: ${custom.topFade}%`;
-            }
-            if (bottomFadeSliderEl && custom.bottomFade !== undefined) {
-                bottomFadeSliderEl.value = custom.bottomFade;
-                const bottomFadeLabel = card.querySelectorAll('label')[4];
-                if (bottomFadeLabel) bottomFadeLabel.textContent = `Bottom Fade: ${custom.bottomFade}%`;
-            }
         }
         // Update all non-customized previews to match master template
         function updateNonCustomizedPreviews() {
@@ -1918,8 +1839,6 @@
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
                     preview.masterOpacity = masterTemplate.masterOpacity;
-                    preview.topFade = masterTemplate.topFade;
-                    preview.bottomFade = masterTemplate.bottomFade;
 
                     const canvas = previewsGrid.querySelectorAll('canvas')[index];
                     if (canvas) {
@@ -1948,9 +1867,7 @@
                             letterSpacing: masterTemplate.letterSpacing,
                             textX: masterTemplate.textX,
                             textY: masterTemplate.textY,
-                            masterOpacity: masterTemplate.masterOpacity,
-                            topFade: masterTemplate.topFade,
-                            bottomFade: masterTemplate.bottomFade
+                            masterOpacity: masterTemplate.masterOpacity
                         };
                         drawCanvas(canvas, favPreview);
                         updateCardSliders(card, masterTemplate);
@@ -2079,10 +1996,6 @@
                     // Subtitle size scales proportionally with main title (37.5% ratio)
                     const subtitleFontSize = preview.fontSize * 0.375 * scaleFactor;
 
-                    // Get main title bounding box metrics for spacing
-                    const mainMetrics = textCtx.measureText(text);
-                    const mainDescent = mainMetrics.actualBoundingBoxDescent;
-
                     // Measure main text width
                     const mainTextWidth = preview.letterSpacing !== 0 ?
                         (() => {
@@ -2093,9 +2006,9 @@
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
-                        const gap = 6 * scaleFactor;
-                        // Position line in the center of the 6px gap
-                        const lineY = y + (scaledFontSize / 2) + (gap / 2);
+                        const spacing = globalSettings.subtitleSpacing * scaleFactor;
+                        // Position line in the center of the spacing
+                        const lineY = y + (scaledFontSize / 2) + (spacing / 2);
                         const lineWidth = mainTextWidth;
                         const lineThickness = 2 * scaleFactor;
 
@@ -2121,16 +2034,8 @@
                         subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Get subtitle bounding box metrics for accurate positioning
-                    const subMetrics = textCtx.measureText(subtitleText);
-                    const subAscent = subMetrics.actualBoundingBoxAscent;
-
-                    // Position subtitle with fixed 6px gap between bounding boxes
-                    // Main title bottom = y + mainDescent
-                    // Subtitle top = main title bottom + 6px gap
-                    // Subtitle center Y = subtitle top + subAscent
-                    const gap = 6 * scaleFactor;
-                    const subtitleY = y + mainDescent + gap + subAscent;
+                    // Position subtitle with spacing from global settings
+                    const subtitleY = y + (scaledFontSize / 2) + (globalSettings.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
 
                     // Apply dual shadow system for subtitle
                     if (globalSettings.effect === 'shadow') {
@@ -2249,36 +2154,6 @@
                 textCtx.shadowOffsetX = 0;
                 textCtx.shadowOffsetY = 0;
 
-                // Apply gradient fades to text canvas if enabled
-                if (preview.topFade > 0 || preview.bottomFade > 0) {
-                    textCtx.save();
-                    textCtx.globalCompositeOperation = 'destination-in';
-
-                    const gradient = textCtx.createLinearGradient(0, 0, 0, canvasHeight);
-
-                    // Top fade
-                    if (preview.topFade > 0) {
-                        const topFadePercent = preview.topFade / 100;
-                        gradient.addColorStop(0, `rgba(255, 255, 255, ${1 - topFadePercent})`);
-                        gradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
-                    } else {
-                        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-                    }
-
-                    // Bottom fade
-                    if (preview.bottomFade > 0) {
-                        const bottomFadePercent = preview.bottomFade / 100;
-                        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1)');
-                        gradient.addColorStop(1, `rgba(255, 255, 255, ${1 - bottomFadePercent})`);
-                    } else {
-                        gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
-                    }
-
-                    textCtx.fillStyle = gradient;
-                    textCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-                    textCtx.restore();
-                }
-
                 // Reset text canvas global alpha
                 textCtx.globalAlpha = 1;
 
@@ -2337,8 +2212,7 @@
                         const subAscent = subMetrics.actualBoundingBoxAscent;
                         const subDescent = subMetrics.actualBoundingBoxDescent;
 
-                        const gap = 6 * scaleFactor;
-                        const subtitleY = y + mainDescent + gap + subAscent;
+                        const subtitleY = y + (scaledFontSize / 2) + (globalSettings.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
 
                         const subtitleBoxX = x - targetSubtitleWidth / 2;
                         const subtitleBoxY = subtitleY - subAscent;
@@ -2372,9 +2246,7 @@
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
                         textY: custom ? custom.textY : masterTemplate.textY,
-                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
-                        topFade: custom ? (custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade) : masterTemplate.topFade,
-                        bottomFade: custom ? (custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade) : masterTemplate.bottomFade
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity
                     };
                     drawCanvas(canvas, favPreview);
                 }
