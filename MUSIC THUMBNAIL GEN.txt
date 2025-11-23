@@ -47,8 +47,8 @@ TECHNICAL DETAILS:
 - Text Colors: White or black
 - Text Transformations: None, uppercase, lowercase, title case
 
-SUBTITLE FEATURE (Added 2025-11-22):
-- Position: Always appears below main title text (closer spacing)
+SUBTITLE FEATURE (Added 2025-11-22, Updated 2025-11-23):
+- Position: Always appears below main title text with adjustable spacing
 - Font: Fixed Arial font family
 - Case: Always uppercase (automatically converted)
 - Font Size: Proportional to main title (37.5% ratio - scales with main title changes)
@@ -58,7 +58,11 @@ SUBTITLE FEATURE (Added 2025-11-22):
 - Dividing Line: Optional horizontal line (2px thick) between title and subtitle, matching title width
   * Toggle: Checkbox to show/hide dividing line (default: ON)
   * Persistence: Toggle state saved to localStorage and restored on page load
-  * Position: Closer to main title for tighter layout
+- Spacing Control (Added 2025-11-23):
+  * Slider: -20px to +20px range for precise control
+  * Presets: Less (-6px), Normal (0px - default), More (6px)
+  * Real-time label updates showing current spacing value
+  * Negative values move subtitle closer to dividing line, positive values push it further away
 - Subtitle Options (via radio buttons):
   * Sleep Music
   * Sleep Sounds
@@ -156,6 +160,14 @@ RECENT FIXES (2025-11-23):
 - Added defensive checks to ensure DOM elements exist before attaching event listeners
 - Added error handlers for FileReader and Image loading failures
 - Why this matters: The duplicate variable was a critical bug that broke all functionality; proper event handling improves reliability across browsers
+
+SUBTITLE SPACING UPDATE (2025-11-23):
+- Changed spacing preset values: Less=-6px, Normal=0px (default), More=6px
+- Added slider control for subtitle spacing: -20px to +20px range
+- Slider provides fine-grained control with real-time label updates
+- Preset buttons highlight in blue when slider matches their values
+- Default spacing is now 0px (Normal) instead of 4px
+- Why this matters: Negative spacing moves subtitle closer to dividing line, positive spacing moves it further away, giving more design flexibility
 
 NOTES:
 - Font categories designed for music genres (EDM, hip-hop, lo-fi, etc.)
