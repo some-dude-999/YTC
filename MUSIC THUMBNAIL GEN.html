@@ -2048,7 +2048,9 @@
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
-                        const lineY = y + scaledFontSize * 0.3; // Closer to main title
+                        const gap = 20 * scaleFactor;
+                        // Position line in the center of the 20px gap
+                        const lineY = y + (scaledFontSize / 2) + (gap / 2);
                         const lineWidth = mainTextWidth;
                         const lineThickness = 2 * scaleFactor;
 
@@ -2074,8 +2076,12 @@
                         subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Position subtitle closer to main text
-                    const subtitleY = y + scaledFontSize * 0.45 + subtitleFontSize * 0.5;
+                    // Position subtitle with fixed 20px gap
+                    // Main title bottom = y + (scaledFontSize / 2)
+                    // Subtitle top = main title bottom + 20px
+                    // Subtitle center = subtitle top + (subtitleFontSize / 2)
+                    const gap = 20 * scaleFactor;
+                    const subtitleY = y + (scaledFontSize / 2) + gap + (subtitleFontSize / 2);
 
                     // Apply dual shadow system for subtitle
                     if (globalSettings.effect === 'shadow') {
