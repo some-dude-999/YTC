@@ -434,6 +434,12 @@
                         <span>Show Dividing Line</span>
                     </label>
                 </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="showBoundingBoxes" style="cursor: pointer;">
+                        <span>Show Bounding Boxes (Debug)</span>
+                    </label>
+                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -703,10 +709,17 @@
         let displayLimit = 40; // Number of fonts to display at once
         let totalFontsToShow = 0; // Total fonts available for current category
 
-        // Initialize with all categories selected
-        Object.keys(FONT_CATEGORIES).forEach(cat => {
-            if (cat !== 'all') selectedCategories.add(cat);
-        });
+        // Load saved categories from localStorage or initialize with all selected
+        const savedCategories = localStorage.getItem('selectedCategories');
+        if (savedCategories) {
+            const categoriesArray = JSON.parse(savedCategories);
+            categoriesArray.forEach(cat => selectedCategories.add(cat));
+        } else {
+            // Default: all categories selected
+            Object.keys(FONT_CATEGORIES).forEach(cat => {
+                if (cat !== 'all') selectedCategories.add(cat);
+            });
+        }
         
         // Global settings
         let globalSettings = {
@@ -715,7 +728,8 @@
             textTransform: 'none',
             subtitle: 'Sleep Music', // Default subtitle
             showBrainIcons: true, // Show rocket and rainbow icons
-            showDividingLine: true // Show dividing line between title and subtitle
+            showDividingLine: true, // Show dividing line between title and subtitle
+            showBoundingBoxes: false // Show bounding boxes for debugging (preview only)
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -793,6 +807,7 @@
         const transformTitle = document.getElementById('transformTitle');
         const showBrainIcons = document.getElementById('showBrainIcons');
         const showDividingLine = document.getElementById('showDividingLine');
+        const showBoundingBoxes = document.getElementById('showBoundingBoxes');
 
         // Load saved subtitle from localStorage
         const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
@@ -818,6 +833,13 @@
         if (savedDividingLine !== null) {
             globalSettings.showDividingLine = savedDividingLine === 'true';
             showDividingLine.checked = globalSettings.showDividingLine;
+        }
+
+        // Load saved bounding boxes state from localStorage
+        const savedBoundingBoxes = localStorage.getItem('showBoundingBoxes');
+        if (savedBoundingBoxes !== null) {
+            globalSettings.showBoundingBoxes = savedBoundingBoxes === 'true';
+            showBoundingBoxes.checked = globalSettings.showBoundingBoxes;
         }
 
         // Function to calculate optimal font size for 65% canvas width
@@ -869,6 +891,11 @@
             });
         });
 
+        // Update checkboxes to reflect loaded state
+        categoryCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectedCategories.has(checkbox.value);
+        });
+
         // Add category checkbox listeners
         categoryCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
@@ -877,6 +904,9 @@
                 } else {
                     selectedCategories.delete(e.target.value);
                 }
+
+                // Save to localStorage
+                localStorage.setItem('selectedCategories', JSON.stringify([...selectedCategories]));
 
                 if (currentImage) {
                     // Clear focus when changing category
@@ -896,6 +926,9 @@
                 selectedCategories.add(checkbox.value);
             });
 
+            // Save to localStorage
+            localStorage.setItem('selectedCategories', JSON.stringify([...selectedCategories]));
+
             if (currentImage) {
                 focusedCanvas = null;
                 focusedPreview = null;
@@ -910,6 +943,9 @@
                 checkbox.checked = false;
                 selectedCategories.delete(checkbox.value);
             });
+
+            // Save to localStorage
+            localStorage.setItem('selectedCategories', JSON.stringify([...selectedCategories]));
 
             if (currentImage) {
                 focusedCanvas = null;
@@ -976,6 +1012,11 @@
         showDividingLine.addEventListener('change', (e) => {
             globalSettings.showDividingLine = e.target.checked;
             localStorage.setItem('showDividingLine', e.target.checked);
+            updateAllPreviews();
+        });
+        showBoundingBoxes.addEventListener('change', (e) => {
+            globalSettings.showBoundingBoxes = e.target.checked;
+            localStorage.setItem('showBoundingBoxes', e.target.checked);
             updateAllPreviews();
         });
         // Keyboard controls for fine-tuning
@@ -1436,8 +1477,8 @@
                 fullCanvas.width = FULL_WIDTH;
                 fullCanvas.height = FULL_HEIGHT;
 
-                // Draw at full resolution
-                drawCanvas(fullCanvas, preview);
+                // Draw at full resolution (no bounding boxes)
+                drawCanvas(fullCanvas, preview, true);
 
                 // Download
                 fullCanvas.toBlob((blob) => {
@@ -1917,7 +1958,7 @@
                 }
             });
         }
-        function drawCanvas(canvas, preview) {
+        function drawCanvas(canvas, preview, isDownload = false) {
             if (!currentImage) return;
             const ctx = canvas.getContext('2d');
             const canvasWidth = canvas.width;
@@ -2048,8 +2089,8 @@
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
-                        const gap = 20 * scaleFactor;
-                        // Position line in the center of the 20px gap
+                        const gap = 6 * scaleFactor;
+                        // Position line in the center of the 6px gap
                         const lineY = y + (scaledFontSize / 2) + (gap / 2);
                         const lineWidth = mainTextWidth;
                         const lineThickness = 2 * scaleFactor;
@@ -2076,11 +2117,11 @@
                         subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Position subtitle with fixed 20px gap
+                    // Position subtitle with fixed 6px gap
                     // Main title bottom = y + (scaledFontSize / 2)
-                    // Subtitle top = main title bottom + 20px
+                    // Subtitle top = main title bottom + 6px
                     // Subtitle center = subtitle top + (subtitleFontSize / 2)
-                    const gap = 20 * scaleFactor;
+                    const gap = 6 * scaleFactor;
                     const subtitleY = y + (scaledFontSize / 2) + gap + (subtitleFontSize / 2);
 
                     // Apply dual shadow system for subtitle
@@ -2235,6 +2276,44 @@
 
                 // Composite the text canvas onto the main canvas
                 ctx.drawImage(textCanvas, 0, 0);
+
+                // Draw bounding boxes for debugging (preview only, not for downloads)
+                if (!isDownload && globalSettings.showBoundingBoxes) {
+                    ctx.strokeStyle = '#00ff00'; // Green for main title
+                    ctx.lineWidth = 2 * scaleFactor;
+
+                    // Main title bounding box
+                    const mainTextWidth = preview.letterSpacing !== 0 ?
+                        (() => {
+                            const chars = text.split('');
+                            const charWidths = chars.map(char => textCtx.measureText(char).width);
+                            return charWidths.reduce((a, b) => a + b, 0) + (chars.length - 1) * (preview.letterSpacing * scaleFactor);
+                        })() : textCtx.measureText(text).width;
+
+                    const titleBoxX = x - mainTextWidth / 2;
+                    const titleBoxY = y - scaledFontSize / 2;
+                    const titleBoxWidth = mainTextWidth;
+                    const titleBoxHeight = scaledFontSize;
+                    ctx.strokeRect(titleBoxX, titleBoxY, titleBoxWidth, titleBoxHeight);
+
+                    // Subtitle bounding box (if subtitle exists)
+                    if (globalSettings.subtitle) {
+                        ctx.strokeStyle = '#ff00ff'; // Magenta for subtitle
+                        const subtitleFontSize = preview.fontSize * 0.375 * scaleFactor;
+                        const subtitleText = globalSettings.subtitle.toUpperCase();
+                        textCtx.font = `${subtitleFontSize}px "Arial"`;
+                        const targetSubtitleWidth = mainTextWidth * 0.98;
+
+                        const gap = 6 * scaleFactor;
+                        const subtitleY = y + (scaledFontSize / 2) + gap + (subtitleFontSize / 2);
+
+                        const subtitleBoxX = x - targetSubtitleWidth / 2;
+                        const subtitleBoxY = subtitleY - subtitleFontSize / 2;
+                        const subtitleBoxWidth = targetSubtitleWidth;
+                        const subtitleBoxHeight = subtitleFontSize;
+                        ctx.strokeRect(subtitleBoxX, subtitleBoxY, subtitleBoxWidth, subtitleBoxHeight);
+                    }
+                }
             }
         }
         function updateAllPreviews() {
