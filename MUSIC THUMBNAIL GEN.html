@@ -1093,7 +1093,10 @@
                 focusedPreview = null;
             }
         });
-        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', () => {
+            fileInput.value = ''; // Reset to allow re-uploading same file
+            fileInput.click();
+        });
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('drag-over');
@@ -1111,6 +1114,7 @@
             handleImageUpload(e.target.files[0]);
         });
         changeImageBtn.addEventListener('click', () => {
+            fileInput.value = ''; // Reset to allow re-uploading same file
             fileInput.click();
         });
         resetBtn.addEventListener('click', () => {
