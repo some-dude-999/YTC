@@ -1093,26 +1093,43 @@
                 focusedPreview = null;
             }
         });
-        dropZone.addEventListener('click', () => {
-            fileInput.value = ''; // Reset to allow re-uploading same file
-            fileInput.click();
-        });
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            handleImageUpload(file);
-        });
-        fileInput.addEventListener('change', (e) => {
-            handleImageUpload(e.target.files[0]);
-        });
+
+        // Debug logging
+        console.log('Initializing file upload listeners');
+        console.log('dropZone element:', dropZone);
+        console.log('fileInput element:', fileInput);
+
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', (e) => {
+                console.log('dropZone clicked');
+                e.stopPropagation(); // Prevent event bubbling
+                fileInput.value = ''; // Reset to allow re-uploading same file
+                fileInput.click();
+                console.log('fileInput.click() called');
+            });
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent default browser behavior
+                dropZone.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                console.log('File dropped:', file);
+                handleImageUpload(file);
+            });
+            fileInput.addEventListener('change', (e) => {
+                console.log('File selected via picker:', e.target.files[0]);
+                handleImageUpload(e.target.files[0]);
+            });
+            console.log('File upload event listeners attached successfully');
+        } else {
+            console.error('Failed to find dropZone or fileInput elements!');
+        }
         changeImageBtn.addEventListener('click', () => {
             fileInput.value = ''; // Reset to allow re-uploading same file
             fileInput.click();
@@ -1175,11 +1192,15 @@
             }
         });
         function handleImageUpload(file) {
+            console.log('handleImageUpload called with:', file);
             if (file && file.type.startsWith('image/')) {
+                console.log('Valid image file, starting upload process');
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    console.log('File loaded, creating image');
                     const img = new Image();
                     img.onload = () => {
+                        console.log('Image loaded successfully, dimensions:', img.width, 'x', img.height);
                         currentImage = img;
                         dropZoneContainer.classList.add('hidden');
                         changeImageBtn.classList.remove('hidden');
@@ -1187,10 +1208,19 @@
                         relinkBtn.classList.remove('hidden');
                         calculateOptimalFontSize();
                         generatePreviews();
+                        console.log('Previews generated');
+                    };
+                    img.onerror = (err) => {
+                        console.error('Error loading image:', err);
                     };
                     img.src = e.target.result;
                 };
+                reader.onerror = (err) => {
+                    console.error('Error reading file:', err);
+                };
                 reader.readAsDataURL(file);
+            } else {
+                console.warn('Invalid file or not an image:', file);
             }
         }
         function generatePreviews() {

@@ -2,7 +2,7 @@
 PROJECT: YTC - YouTube Content Tools
 COMPONENT: YouTube Thumbnail Creator with Text
 CREATED: 2025-11-19
-LAST UPDATED: 2025-11-22 - Added subtitle feature with dynamic letter-spacing
+LAST UPDATED: 2025-11-23 - Fixed image upload with enhanced error handling and event handling
 
 DATA SOURCES:
 - User Input: Text overlay, subtitle selection, font category, text effects, text color, text transformation
@@ -145,6 +145,13 @@ CORRECTIONS & CLARIFICATIONS:
 - Initially thought: Master template forces all fonts to match
 - Actually: Master template only affects non-customized fonts; customizations persist until "Relink All"
 - Why this matters: Users can mix master-linked and custom fonts
+
+RECENT FIXES (2025-11-23):
+- Fixed image upload click handler with event.stopPropagation() to prevent event bubbling
+- Added comprehensive console logging for debugging upload issues
+- Added defensive checks to ensure DOM elements exist before attaching event listeners
+- Added error handlers for FileReader and Image loading failures
+- Why this matters: Improves reliability of file upload on different browsers and helps debug issues
 
 NOTES:
 - Font categories designed for music genres (EDM, hip-hop, lo-fi, etc.)
