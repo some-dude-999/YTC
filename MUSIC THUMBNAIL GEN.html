@@ -1711,9 +1711,9 @@
             masterOpacityGroup.appendChild(masterOpacitySlider);
 
             // Subtitle Spacing with presets
-            const spacingGroup = document.createElement('div');
-            spacingGroup.style.width = '100%';
-            spacingGroup.style.marginTop = '10px';
+            const subtitleSpacingGroup = document.createElement('div');
+            subtitleSpacingGroup.style.width = '100%';
+            subtitleSpacingGroup.style.marginTop = '10px';
 
             const spacingPresets = document.createElement('div');
             spacingPresets.style.display = 'flex';
@@ -1820,10 +1820,10 @@
             spacingPresets.appendChild(btnLess);
             spacingPresets.appendChild(btnNormal);
             spacingPresets.appendChild(btnMore);
-            spacingGroup.appendChild(spacingPresets);
+            subtitleSpacingGroup.appendChild(spacingPresets);
 
             controlsRow3.appendChild(masterOpacityGroup);
-            controlsRow3.appendChild(spacingGroup);
+            controlsRow3.appendChild(subtitleSpacingGroup);
             card.appendChild(controlsRow3);
 
             return card;
