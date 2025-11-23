@@ -38,7 +38,9 @@ INTEGRATION:
 
 TECHNICAL DETAILS:
 - Resolution: Full-res 1280x720 (displays at 640x360 preview)
-- Font Categories: 19 categories + "all" (bold, futuristic, modern, clean, condensed, display, elegant, script, retro, hip-hop, minimal, corporate, grunge, rounded, techno, halloween, christmas, synthwave, space, medieval, pirate)
+- Font Categories: 21 categories (bold, futuristic, modern, clean, condensed, display, elegant, script, retro, hip-hop, minimal, corporate, grunge, rounded, techno, halloween, christmas, synthwave, space, medieval, pirate)
+- Category Selection: Multi-select checkbox system with "Select All" button
+- Font Display: Each font shows its category memberships (e.g., "Bebas Neue - Bold, Hip-Hop, Retro")
 - Total Fonts: 560+ from Google Fonts
 - Export Format: PNG (image/png)
 - Text Effects: Drop shadow, glow, or none
