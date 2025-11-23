@@ -434,23 +434,6 @@
                         <span>Show Dividing Line</span>
                     </label>
                 </div>
-                <div style="margin-top: 15px; margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px;">Opacity Controls:</label>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div>
-                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Master Opacity: <span id="masterOpacityValue">100</span>%</label>
-                            <input type="range" id="masterOpacity" min="0" max="100" value="100" style="width: 100%;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Top Fade: <span id="topFadeValue">0</span>%</label>
-                            <input type="range" id="topFade" min="0" max="100" value="0" style="width: 100%;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Bottom Fade: <span id="bottomFadeValue">0</span>%</label>
-                            <input type="range" id="bottomFade" min="0" max="100" value="0" style="width: 100%;">
-                        </div>
-                    </div>
-                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -732,17 +715,17 @@
             textTransform: 'none',
             subtitle: 'Sleep Music', // Default subtitle
             showBrainIcons: true, // Show rocket and rainbow icons
-            showDividingLine: true, // Show dividing line between title and subtitle
-            masterOpacity: 100, // Master opacity (0-100)
-            topFade: 0, // Top fade (0-100, 0 = no fade, 100 = fully transparent at top)
-            bottomFade: 0 // Bottom fade (0-100, 0 = no fade, 100 = fully transparent at bottom)
+            showDividingLine: true // Show dividing line between title and subtitle
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
             fontSize: 80,
             letterSpacing: 0,
             textX: 0.5,
-            textY: 0.5
+            textY: 0.5,
+            masterOpacity: 100,
+            topFade: 0,
+            bottomFade: 0
         };
         // Load fonts
         function loadGoogleFonts() {
@@ -810,12 +793,6 @@
         const transformTitle = document.getElementById('transformTitle');
         const showBrainIcons = document.getElementById('showBrainIcons');
         const showDividingLine = document.getElementById('showDividingLine');
-        const masterOpacitySlider = document.getElementById('masterOpacity');
-        const masterOpacityValue = document.getElementById('masterOpacityValue');
-        const topFadeSlider = document.getElementById('topFade');
-        const topFadeValue = document.getElementById('topFadeValue');
-        const bottomFadeSlider = document.getElementById('bottomFade');
-        const bottomFadeValue = document.getElementById('bottomFadeValue');
 
         // Load saved subtitle from localStorage
         const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
@@ -962,21 +939,6 @@
             localStorage.setItem('showDividingLine', e.target.checked);
             updateAllPreviews();
         });
-        masterOpacitySlider.addEventListener('input', (e) => {
-            globalSettings.masterOpacity = parseInt(e.target.value);
-            masterOpacityValue.textContent = e.target.value;
-            updateAllPreviews();
-        });
-        topFadeSlider.addEventListener('input', (e) => {
-            globalSettings.topFade = parseInt(e.target.value);
-            topFadeValue.textContent = e.target.value;
-            updateAllPreviews();
-        });
-        bottomFadeSlider.addEventListener('input', (e) => {
-            globalSettings.bottomFade = parseInt(e.target.value);
-            bottomFadeValue.textContent = e.target.value;
-            updateAllPreviews();
-        });
         // Keyboard controls for fine-tuning
         let keyboardMovedMaster = false; // Track if master was moved during keydown
         
@@ -1023,7 +985,10 @@
                             fontSize: focusedPreview.fontSize,
                             letterSpacing: focusedPreview.letterSpacing,
                             textX: focusedPreview.textX,
-                            textY: focusedPreview.textY
+                            textY: focusedPreview.textY,
+                            masterOpacity: focusedPreview.masterOpacity,
+                            topFade: focusedPreview.topFade,
+                            bottomFade: focusedPreview.bottomFade
                         };
                     }
                     fontCustomizations[focusedPreview.font].textX = focusedPreview.textX;
@@ -1115,22 +1080,16 @@
                 textTransform: 'none',
                 subtitle: 'Sleep Music',
                 showBrainIcons: true,
-                showDividingLine: true,
-                masterOpacity: 100,
-                topFade: 0,
-                bottomFade: 0
+                showDividingLine: true
             };
-            masterOpacitySlider.value = 100;
-            masterOpacityValue.textContent = '100';
-            topFadeSlider.value = 0;
-            topFadeValue.textContent = '0';
-            bottomFadeSlider.value = 0;
-            bottomFadeValue.textContent = '0';
             masterTemplate = {
                 fontSize: 80,
                 letterSpacing: 0,
                 textX: 0.5,
-                textY: 0.5
+                textY: 0.5,
+                masterOpacity: 100,
+                topFade: 0,
+                bottomFade: 0
             };
         });
         relinkBtn.addEventListener('click', () => {
@@ -1191,7 +1150,10 @@
                 fontSize: masterTemplate.fontSize,
                 letterSpacing: masterTemplate.letterSpacing,
                 textX: masterTemplate.textX,
-                textY: masterTemplate.textY
+                textY: masterTemplate.textY,
+                masterOpacity: masterTemplate.masterOpacity,
+                topFade: masterTemplate.topFade,
+                bottomFade: masterTemplate.bottomFade
             }];
             // Add all fonts
             previews = previews.concat(sortedFonts.map(font => {
@@ -1204,7 +1166,10 @@
                         fontSize: custom.fontSize,
                         letterSpacing: custom.letterSpacing,
                         textX: custom.textX,
-                        textY: custom.textY
+                        textY: custom.textY,
+                        masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
+                        topFade: custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade,
+                        bottomFade: custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade
                     };
                 } else {
                     return {
@@ -1213,7 +1178,10 @@
                         fontSize: masterTemplate.fontSize,
                         letterSpacing: masterTemplate.letterSpacing,
                         textX: masterTemplate.textX,
-                        textY: masterTemplate.textY
+                        textY: masterTemplate.textY,
+                        masterOpacity: masterTemplate.masterOpacity,
+                        topFade: masterTemplate.topFade,
+                        bottomFade: masterTemplate.bottomFade
                     };
                 }
             }));
@@ -1238,9 +1206,12 @@
                         fontSize: custom ? custom.fontSize : masterTemplate.fontSize,
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
-                        textY: custom ? custom.textY : masterTemplate.textY
+                        textY: custom ? custom.textY : masterTemplate.textY,
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
+                        topFade: custom ? (custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade) : masterTemplate.topFade,
+                        bottomFade: custom ? (custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade) : masterTemplate.bottomFade
                     };
-                    
+
                     const card = createPreviewCard(preview, font); // Use font name as identifier
                     favoritesGrid.appendChild(card);
                 });
@@ -1379,7 +1350,10 @@
                                 fontSize: preview.fontSize,
                                 letterSpacing: preview.letterSpacing,
                                 textX: preview.textX,
-                                textY: preview.textY
+                                textY: preview.textY,
+                                masterOpacity: preview.masterOpacity,
+                                topFade: preview.topFade,
+                                bottomFade: preview.bottomFade
                             };
                         }
                         fontCustomizations[preview.font].textX = newX;
@@ -1387,7 +1361,7 @@
                         preview.textX = newX;
                         preview.textY = newY;
                         drawCanvas(canvas, preview);
-                        
+
                         // Update the other instance (favorite or non-favorite)
                         updateLinkedFont(preview.font);
                     }
@@ -1450,6 +1424,9 @@
                     preview.letterSpacing = masterTemplate.letterSpacing;
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
+                    preview.masterOpacity = masterTemplate.masterOpacity;
+                    preview.topFade = masterTemplate.topFade;
+                    preview.bottomFade = masterTemplate.bottomFade;
 
                     // Redraw canvas
                     drawCanvas(canvas, preview);
@@ -1457,6 +1434,9 @@
                     // Update sliders
                     const sizeSlider = card.querySelector('input[type="range"][min="20"]');
                     const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
+                    const opacitySlider = card.querySelector('input[type="range"][min="0"][max="100"]');
+                    const topFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[1];
+                    const bottomFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[2];
                     const sizeLabel = card.querySelector('.slider-group:first-child label');
                     const spacingLabel = card.querySelector('.slider-group:last-child label');
 
@@ -1467,6 +1447,21 @@
                     if (spacingSlider) {
                         spacingSlider.value = masterTemplate.letterSpacing;
                         spacingLabel.textContent = `Char Spacing: ${masterTemplate.letterSpacing}px`;
+                    }
+                    if (opacitySlider) {
+                        opacitySlider.value = masterTemplate.masterOpacity;
+                        const opacityLabel = card.querySelectorAll('label')[2];
+                        if (opacityLabel) opacityLabel.textContent = `Opacity: ${masterTemplate.masterOpacity}%`;
+                    }
+                    if (topFadeSliderEl) {
+                        topFadeSliderEl.value = masterTemplate.topFade;
+                        const topFadeLabel = card.querySelectorAll('label')[3];
+                        if (topFadeLabel) topFadeLabel.textContent = `Top Fade: ${masterTemplate.topFade}%`;
+                    }
+                    if (bottomFadeSliderEl) {
+                        bottomFadeSliderEl.value = masterTemplate.bottomFade;
+                        const bottomFadeLabel = card.querySelectorAll('label')[4];
+                        if (bottomFadeLabel) bottomFadeLabel.textContent = `Bottom Fade: ${masterTemplate.bottomFade}%`;
                     }
 
                     // Update linked font if in favorites
@@ -1574,6 +1569,168 @@
             controlsRow2.appendChild(sizeGroup);
             controlsRow2.appendChild(spacingGroup);
             card.appendChild(controlsRow2);
+
+            // Controls row 3 - Opacity controls
+            const controlsRow3 = document.createElement('div');
+            controlsRow3.className = 'controls-row';
+            controlsRow3.style.flexDirection = 'column';
+            controlsRow3.style.gap = '8px';
+
+            // Master Opacity
+            const masterOpacityGroup = document.createElement('div');
+            masterOpacityGroup.style.width = '100%';
+            const masterOpacityLabel = document.createElement('label');
+            masterOpacityLabel.textContent = `Opacity: ${preview.masterOpacity}%`;
+            masterOpacityLabel.style.fontSize = '10px';
+            masterOpacityLabel.style.color = '#aaa';
+            masterOpacityLabel.style.marginBottom = '3px';
+            masterOpacityLabel.style.display = 'block';
+            const masterOpacitySlider = document.createElement('input');
+            masterOpacitySlider.type = 'range';
+            masterOpacitySlider.className = 'slider';
+            masterOpacitySlider.min = '0';
+            masterOpacitySlider.max = '100';
+            masterOpacitySlider.value = preview.masterOpacity;
+            masterOpacitySlider.style.width = '100%';
+            masterOpacitySlider.addEventListener('input', (e) => {
+                const newOpacity = parseInt(e.target.value);
+                masterOpacityLabel.textContent = `Opacity: ${e.target.value}%`;
+
+                if (preview.isMaster) {
+                    masterTemplate.masterOpacity = newOpacity;
+                    preview.masterOpacity = newOpacity;
+                    drawCanvas(canvas, preview);
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            topFade: preview.topFade,
+                            bottomFade: preview.bottomFade
+                        };
+                    }
+                    fontCustomizations[preview.font].masterOpacity = newOpacity;
+                    preview.masterOpacity = newOpacity;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+            });
+            if (preview.isMaster) {
+                masterOpacitySlider.addEventListener('change', () => {
+                    updateNonCustomizedPreviews();
+                });
+            }
+            masterOpacityGroup.appendChild(masterOpacityLabel);
+            masterOpacityGroup.appendChild(masterOpacitySlider);
+
+            // Top Fade
+            const topFadeGroup = document.createElement('div');
+            topFadeGroup.style.width = '100%';
+            const topFadeLabel = document.createElement('label');
+            topFadeLabel.textContent = `Top Fade: ${preview.topFade}%`;
+            topFadeLabel.style.fontSize = '10px';
+            topFadeLabel.style.color = '#aaa';
+            topFadeLabel.style.marginBottom = '3px';
+            topFadeLabel.style.display = 'block';
+            const topFadeSlider = document.createElement('input');
+            topFadeSlider.type = 'range';
+            topFadeSlider.className = 'slider';
+            topFadeSlider.min = '0';
+            topFadeSlider.max = '100';
+            topFadeSlider.value = preview.topFade;
+            topFadeSlider.style.width = '100%';
+            topFadeSlider.addEventListener('input', (e) => {
+                const newFade = parseInt(e.target.value);
+                topFadeLabel.textContent = `Top Fade: ${e.target.value}%`;
+
+                if (preview.isMaster) {
+                    masterTemplate.topFade = newFade;
+                    preview.topFade = newFade;
+                    drawCanvas(canvas, preview);
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            topFade: preview.topFade,
+                            bottomFade: preview.bottomFade
+                        };
+                    }
+                    fontCustomizations[preview.font].topFade = newFade;
+                    preview.topFade = newFade;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+            });
+            if (preview.isMaster) {
+                topFadeSlider.addEventListener('change', () => {
+                    updateNonCustomizedPreviews();
+                });
+            }
+            topFadeGroup.appendChild(topFadeLabel);
+            topFadeGroup.appendChild(topFadeSlider);
+
+            // Bottom Fade
+            const bottomFadeGroup = document.createElement('div');
+            bottomFadeGroup.style.width = '100%';
+            const bottomFadeLabel = document.createElement('label');
+            bottomFadeLabel.textContent = `Bottom Fade: ${preview.bottomFade}%`;
+            bottomFadeLabel.style.fontSize = '10px';
+            bottomFadeLabel.style.color = '#aaa';
+            bottomFadeLabel.style.marginBottom = '3px';
+            bottomFadeLabel.style.display = 'block';
+            const bottomFadeSlider = document.createElement('input');
+            bottomFadeSlider.type = 'range';
+            bottomFadeSlider.className = 'slider';
+            bottomFadeSlider.min = '0';
+            bottomFadeSlider.max = '100';
+            bottomFadeSlider.value = preview.bottomFade;
+            bottomFadeSlider.style.width = '100%';
+            bottomFadeSlider.addEventListener('input', (e) => {
+                const newFade = parseInt(e.target.value);
+                bottomFadeLabel.textContent = `Bottom Fade: ${e.target.value}%`;
+
+                if (preview.isMaster) {
+                    masterTemplate.bottomFade = newFade;
+                    preview.bottomFade = newFade;
+                    drawCanvas(canvas, preview);
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            topFade: preview.topFade,
+                            bottomFade: preview.bottomFade
+                        };
+                    }
+                    fontCustomizations[preview.font].bottomFade = newFade;
+                    preview.bottomFade = newFade;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+            });
+            if (preview.isMaster) {
+                bottomFadeSlider.addEventListener('change', () => {
+                    updateNonCustomizedPreviews();
+                });
+            }
+            bottomFadeGroup.appendChild(bottomFadeLabel);
+            bottomFadeGroup.appendChild(bottomFadeSlider);
+
+            controlsRow3.appendChild(masterOpacityGroup);
+            controlsRow3.appendChild(topFadeGroup);
+            controlsRow3.appendChild(bottomFadeGroup);
+            card.appendChild(controlsRow3);
+
             return card;
         }
         // Update the linked instance of a font (favorite or non-favorite)
@@ -1592,8 +1749,11 @@
                     previews[previewIndex].letterSpacing = custom.letterSpacing;
                     previews[previewIndex].textX = custom.textX;
                     previews[previewIndex].textY = custom.textY;
+                    previews[previewIndex].masterOpacity = custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity;
+                    previews[previewIndex].topFade = custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade;
+                    previews[previewIndex].bottomFade = custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade;
                     drawCanvas(mainCanvas, previews[previewIndex]);
-                    
+
                     // Update sliders
                     const card = mainCanvas.closest('.preview-card');
                     updateCardSliders(card, custom);
@@ -1604,7 +1764,13 @@
             const favCanvas = Array.from(favoritesGrid.querySelectorAll('canvas')).find((canvas) => {
                 const card = canvas.closest('.preview-card');
                 const fontText = card.querySelector('.font-name span');
-                return fontText && fontText.textContent === fontName;
+                if (fontText) {
+                    // Extract just the font name (before the " - " separator for categories)
+                    const fullText = fontText.textContent;
+                    const extractedFontName = fullText.includes(' - ') ? fullText.split(' - ')[0] : fullText;
+                    return extractedFontName === fontName;
+                }
+                return false;
             });
             if (favCanvas) {
                 const favPreview = {
@@ -1613,10 +1779,13 @@
                     fontSize: custom.fontSize,
                     letterSpacing: custom.letterSpacing,
                     textX: custom.textX,
-                    textY: custom.textY
+                    textY: custom.textY,
+                    masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
+                    topFade: custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade,
+                    bottomFade: custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade
                 };
                 drawCanvas(favCanvas, favPreview);
-                
+
                 // Update sliders
                 const card = favCanvas.closest('.preview-card');
                 updateCardSliders(card, custom);
@@ -1625,9 +1794,12 @@
         function updateCardSliders(card, custom) {
             const sizeSlider = card.querySelector('input[type="range"][min="20"]');
             const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
+            const opacitySlider = card.querySelector('input[type="range"][min="0"][max="100"]');
+            const topFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[1];
+            const bottomFadeSliderEl = card.querySelectorAll('input[type="range"][min="0"][max="100"]')[2];
             const sizeLabel = card.querySelector('.slider-group:first-child label');
             const spacingLabel = card.querySelector('.slider-group:last-child label');
-            
+
             if (sizeSlider) {
                 sizeSlider.value = custom.fontSize;
                 sizeLabel.textContent = `Size: ${custom.fontSize}px`;
@@ -1635,6 +1807,21 @@
             if (spacingSlider) {
                 spacingSlider.value = custom.letterSpacing;
                 spacingLabel.textContent = `Char Spacing: ${custom.letterSpacing}px`;
+            }
+            if (opacitySlider && custom.masterOpacity !== undefined) {
+                opacitySlider.value = custom.masterOpacity;
+                const opacityLabel = card.querySelectorAll('label')[2];
+                if (opacityLabel) opacityLabel.textContent = `Opacity: ${custom.masterOpacity}%`;
+            }
+            if (topFadeSliderEl && custom.topFade !== undefined) {
+                topFadeSliderEl.value = custom.topFade;
+                const topFadeLabel = card.querySelectorAll('label')[3];
+                if (topFadeLabel) topFadeLabel.textContent = `Top Fade: ${custom.topFade}%`;
+            }
+            if (bottomFadeSliderEl && custom.bottomFade !== undefined) {
+                bottomFadeSliderEl.value = custom.bottomFade;
+                const bottomFadeLabel = card.querySelectorAll('label')[4];
+                if (bottomFadeLabel) bottomFadeLabel.textContent = `Bottom Fade: ${custom.bottomFade}%`;
             }
         }
         // Update all non-customized previews to match master template
@@ -1646,7 +1833,10 @@
                     preview.letterSpacing = masterTemplate.letterSpacing;
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
-                    
+                    preview.masterOpacity = masterTemplate.masterOpacity;
+                    preview.topFade = masterTemplate.topFade;
+                    preview.bottomFade = masterTemplate.bottomFade;
+
                     const canvas = previewsGrid.querySelectorAll('canvas')[index];
                     if (canvas) {
                         drawCanvas(canvas, preview);
@@ -1662,7 +1852,9 @@
                 const card = canvas.closest('.preview-card');
                 const fontText = card.querySelector('.font-name span');
                 if (fontText) {
-                    const fontName = fontText.textContent;
+                    // Extract just the font name (before the " - " separator for categories)
+                    const fullText = fontText.textContent;
+                    const fontName = fullText.includes(' - ') ? fullText.split(' - ')[0] : fullText;
                     // Only update if not customized
                     if (!fontCustomizations[fontName]) {
                         const favPreview = {
@@ -1671,7 +1863,10 @@
                             fontSize: masterTemplate.fontSize,
                             letterSpacing: masterTemplate.letterSpacing,
                             textX: masterTemplate.textX,
-                            textY: masterTemplate.textY
+                            textY: masterTemplate.textY,
+                            masterOpacity: masterTemplate.masterOpacity,
+                            topFade: masterTemplate.topFade,
+                            bottomFade: masterTemplate.bottomFade
                         };
                         drawCanvas(canvas, favPreview);
                         updateCardSliders(card, masterTemplate);
@@ -1705,10 +1900,16 @@
             }
             ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
 
-            // Apply master opacity
-            ctx.globalAlpha = globalSettings.masterOpacity / 100;
+            // Create a temporary canvas for text with fades
+            const textCanvas = document.createElement('canvas');
+            textCanvas.width = canvasWidth;
+            textCanvas.height = canvasHeight;
+            const textCtx = textCanvas.getContext('2d');
 
-            // Draw text
+            // Apply master opacity to text canvas
+            textCtx.globalAlpha = preview.masterOpacity / 100;
+
+            // Draw text to temporary canvas
             let text = textInput.value;
             text = applyTextTransform(text, globalSettings.textTransform);
 
@@ -1716,41 +1917,41 @@
                 // Scale font size based on canvas resolution
                 const scaleFactor = canvasWidth / FULL_WIDTH;
                 const scaledFontSize = preview.fontSize * scaleFactor;
-                
-                ctx.font = `${scaledFontSize}px "${preview.font}"`;
-                ctx.fillStyle = globalSettings.textColor;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
+
+                textCtx.font = `${scaledFontSize}px "${preview.font}"`;
+                textCtx.fillStyle = globalSettings.textColor;
+                textCtx.textAlign = 'center';
+                textCtx.textBaseline = 'middle';
+
                 const x = canvasWidth * preview.textX;
                 const y = canvasHeight * preview.textY;
                 // Apply effects using global settings
                 if (globalSettings.effect === 'shadow') {
-                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                    ctx.shadowBlur = 25 * scaleFactor;
-                    ctx.shadowOffsetX = 8 * scaleFactor;
-                    ctx.shadowOffsetY = 8 * scaleFactor;
+                    textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                    textCtx.shadowBlur = 25 * scaleFactor;
+                    textCtx.shadowOffsetX = 8 * scaleFactor;
+                    textCtx.shadowOffsetY = 8 * scaleFactor;
                 } else if (globalSettings.effect === 'glow') {
-                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
-                    ctx.shadowBlur = 20 * scaleFactor;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
+                    textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                    textCtx.shadowBlur = 20 * scaleFactor;
+                    textCtx.shadowOffsetX = 0;
+                    textCtx.shadowOffsetY = 0;
                 }
                 // Letter spacing (character spacing)
                 const scaledLetterSpacing = preview.letterSpacing * scaleFactor;
                 if (preview.letterSpacing !== 0) {
                     const chars = text.split('');
-                    const charWidths = chars.map(char => ctx.measureText(char).width);
-                    const totalWidth = charWidths.reduce((a, b) => a + b, 0) + 
+                    const charWidths = chars.map(char => textCtx.measureText(char).width);
+                    const totalWidth = charWidths.reduce((a, b) => a + b, 0) +
                                      (chars.length - 1) * scaledLetterSpacing;
-                    
+
                     let currentX = x - totalWidth / 2;
                     chars.forEach((char, i) => {
-                        ctx.fillText(char, currentX + charWidths[i] / 2, y);
+                        textCtx.fillText(char, currentX + charWidths[i] / 2, y);
                         currentX += charWidths[i] + scaledLetterSpacing;
                     });
                 } else {
-                    ctx.fillText(text, x, y);
+                    textCtx.fillText(text, x, y);
                 }
 
                 // Draw subtitle
@@ -1763,9 +1964,9 @@
                     const mainTextWidth = preview.letterSpacing !== 0 ?
                         (() => {
                             const chars = text.split('');
-                            const charWidths = chars.map(char => ctx.measureText(char).width);
+                            const charWidths = chars.map(char => textCtx.measureText(char).width);
                             return charWidths.reduce((a, b) => a + b, 0) + (chars.length - 1) * (preview.letterSpacing * scaleFactor);
-                        })() : ctx.measureText(text).width;
+                        })() : textCtx.measureText(text).width;
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
@@ -1773,19 +1974,19 @@
                         const lineWidth = mainTextWidth;
                         const lineThickness = 2 * scaleFactor;
 
-                        ctx.fillStyle = globalSettings.textColor;
-                        ctx.fillRect(x - lineWidth / 2, lineY, lineWidth, lineThickness);
+                        textCtx.fillStyle = globalSettings.textColor;
+                        textCtx.fillRect(x - lineWidth / 2, lineY, lineWidth, lineThickness);
                     }
 
                     // Set subtitle font (Arial)
-                    ctx.font = `${subtitleFontSize}px "Arial"`;
+                    textCtx.font = `${subtitleFontSize}px "Arial"`;
 
                     // Target width: 98% of main text width (almost same but not quite)
                     const targetSubtitleWidth = mainTextWidth * 0.98;
 
                     // Measure subtitle text width without spacing
                     const subtitleChars = subtitleText.split('');
-                    const subtitleCharWidths = subtitleChars.map(char => ctx.measureText(char).width);
+                    const subtitleCharWidths = subtitleChars.map(char => textCtx.measureText(char).width);
                     const subtitleBaseWidth = subtitleCharWidths.reduce((a, b) => a + b, 0);
 
                     // Calculate required letter spacing to match target width
@@ -1800,27 +2001,27 @@
 
                     // Apply same effects as main text
                     if (globalSettings.effect === 'shadow') {
-                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                        ctx.shadowBlur = 25 * scaleFactor;
-                        ctx.shadowOffsetX = 8 * scaleFactor;
-                        ctx.shadowOffsetY = 8 * scaleFactor;
+                        textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        textCtx.shadowBlur = 25 * scaleFactor;
+                        textCtx.shadowOffsetX = 8 * scaleFactor;
+                        textCtx.shadowOffsetY = 8 * scaleFactor;
                     } else if (globalSettings.effect === 'glow') {
-                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
-                        ctx.shadowBlur = 20 * scaleFactor;
-                        ctx.shadowOffsetX = 0;
-                        ctx.shadowOffsetY = 0;
+                        textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                        textCtx.shadowBlur = 20 * scaleFactor;
+                        textCtx.shadowOffsetX = 0;
+                        textCtx.shadowOffsetY = 0;
                     }
 
                     // Draw subtitle with calculated letter spacing
                     if (subtitleLetterSpacing > 0) {
                         let currentX = x - targetSubtitleWidth / 2;
                         subtitleChars.forEach((char, i) => {
-                            ctx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
+                            textCtx.fillText(char, currentX + subtitleCharWidths[i] / 2, subtitleY);
                             currentX += subtitleCharWidths[i] + subtitleLetterSpacing;
                         });
                     } else {
                         // If subtitle is wider than target, just center it
-                        ctx.fillText(subtitleText, x, subtitleY);
+                        textCtx.fillText(subtitleText, x, subtitleY);
                     }
 
                     // Draw brain icons (rocket and rainbow)
@@ -1834,46 +2035,46 @@
                         const iconPadding = 20 * scaleFactor; // Padding between icons and text
 
                         // Set font for emoji icons
-                        ctx.font = `${iconSize}px Arial`;
+                        textCtx.font = `${iconSize}px Arial`;
 
                         // Apply same effects as main text
                         if (globalSettings.effect === 'shadow') {
-                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
-                            ctx.shadowBlur = 25 * scaleFactor;
-                            ctx.shadowOffsetX = 8 * scaleFactor;
-                            ctx.shadowOffsetY = 8 * scaleFactor;
+                            textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                            textCtx.shadowBlur = 25 * scaleFactor;
+                            textCtx.shadowOffsetX = 8 * scaleFactor;
+                            textCtx.shadowOffsetY = 8 * scaleFactor;
                         } else if (globalSettings.effect === 'glow') {
-                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
-                            ctx.shadowBlur = 20 * scaleFactor;
-                            ctx.shadowOffsetX = 0;
-                            ctx.shadowOffsetY = 0;
+                            textCtx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                            textCtx.shadowBlur = 20 * scaleFactor;
+                            textCtx.shadowOffsetX = 0;
+                            textCtx.shadowOffsetY = 0;
                         }
 
                         // Draw rocket on the left (left brain)
-                        ctx.fillStyle = globalSettings.textColor;
-                        ctx.fillText('🚀', textBoxLeft - iconPadding - iconSize / 2, iconY);
+                        textCtx.fillStyle = globalSettings.textColor;
+                        textCtx.fillText('🚀', textBoxLeft - iconPadding - iconSize / 2, iconY);
 
                         // Draw rainbow on the right (right brain)
-                        ctx.fillText('🌈', textBoxRight + iconPadding + iconSize / 2, iconY);
+                        textCtx.fillText('🌈', textBoxRight + iconPadding + iconSize / 2, iconY);
                     }
                 }
 
-                // Reset shadow
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;
+                // Reset shadow on text canvas
+                textCtx.shadowColor = 'transparent';
+                textCtx.shadowBlur = 0;
+                textCtx.shadowOffsetX = 0;
+                textCtx.shadowOffsetY = 0;
 
-                // Apply gradient fades if enabled
-                if (globalSettings.topFade > 0 || globalSettings.bottomFade > 0) {
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'destination-in';
+                // Apply gradient fades to text canvas if enabled
+                if (preview.topFade > 0 || preview.bottomFade > 0) {
+                    textCtx.save();
+                    textCtx.globalCompositeOperation = 'destination-in';
 
-                    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+                    const gradient = textCtx.createLinearGradient(0, 0, 0, canvasHeight);
 
                     // Top fade
-                    if (globalSettings.topFade > 0) {
-                        const topFadePercent = globalSettings.topFade / 100;
+                    if (preview.topFade > 0) {
+                        const topFadePercent = preview.topFade / 100;
                         gradient.addColorStop(0, `rgba(255, 255, 255, ${1 - topFadePercent})`);
                         gradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
                     } else {
@@ -1881,22 +2082,25 @@
                     }
 
                     // Bottom fade
-                    if (globalSettings.bottomFade > 0) {
-                        const bottomFadePercent = globalSettings.bottomFade / 100;
+                    if (preview.bottomFade > 0) {
+                        const bottomFadePercent = preview.bottomFade / 100;
                         gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1)');
                         gradient.addColorStop(1, `rgba(255, 255, 255, ${1 - bottomFadePercent})`);
                     } else {
                         gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
                     }
 
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-                    ctx.restore();
+                    textCtx.fillStyle = gradient;
+                    textCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+                    textCtx.restore();
                 }
-            }
 
-            // Reset global alpha
-            ctx.globalAlpha = 1;
+                // Reset text canvas global alpha
+                textCtx.globalAlpha = 1;
+
+                // Composite the text canvas onto the main canvas
+                ctx.drawImage(textCanvas, 0, 0);
+            }
         }
         function updateAllPreviews() {
             const canvases = previewsGrid.querySelectorAll('canvas');
@@ -1910,7 +2114,9 @@
                 const card = canvas.closest('.preview-card');
                 const fontText = card.querySelector('.font-name span');
                 if (fontText) {
-                    const fontName = fontText.textContent;
+                    // Extract just the font name (before the " - " separator for categories)
+                    const fullText = fontText.textContent;
+                    const fontName = fullText.includes(' - ') ? fullText.split(' - ')[0] : fullText;
                     const custom = fontCustomizations[fontName];
                     const favPreview = {
                         font: fontName,
@@ -1918,7 +2124,10 @@
                         fontSize: custom ? custom.fontSize : masterTemplate.fontSize,
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
-                        textY: custom ? custom.textY : masterTemplate.textY
+                        textY: custom ? custom.textY : masterTemplate.textY,
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
+                        topFade: custom ? (custom.topFade !== undefined ? custom.topFade : masterTemplate.topFade) : masterTemplate.topFade,
+                        bottomFade: custom ? (custom.bottomFade !== undefined ? custom.bottomFade : masterTemplate.bottomFade) : masterTemplate.bottomFade
                     };
                     drawCanvas(canvas, favPreview);
                 }
