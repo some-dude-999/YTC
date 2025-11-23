@@ -440,16 +440,6 @@
                         <span>Show Bounding Boxes (Debug)</span>
                     </label>
                 </div>
-                <div style="margin-top: 15px; margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px;">Title-Subtitle Spacing:</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button id="spacingLess" style="padding: 5px 15px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Less (15px)</button>
-                        <button id="spacingNormal" style="padding: 5px 15px; background: #0088ff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Normal (30px)</button>
-                        <button id="spacingMore" style="padding: 5px 15px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">More (50px)</button>
-                    </div>
-                    <input type="range" id="subtitleSpacingSlider" min="0" max="100" value="30" style="width: 100%; cursor: pointer;">
-                    <div style="text-align: center; color: #aaa; font-size: 12px; margin-top: 5px;" id="spacingValue">30px</div>
-                </div>
             </div>
             <div id="dropZoneContainer">
                 <div class="drop-zone" id="dropZone">
@@ -739,8 +729,7 @@
             subtitle: 'Sleep Music', // Default subtitle
             showBrainIcons: true, // Show rocket and rainbow icons
             showDividingLine: true, // Show dividing line between title and subtitle
-            showBoundingBoxes: false, // Show bounding boxes for debugging (preview only)
-            subtitleSpacing: 30 // Spacing between title and subtitle in pixels
+            showBoundingBoxes: false // Show bounding boxes for debugging (preview only)
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -748,7 +737,8 @@
             letterSpacing: 0,
             textX: 0.5,
             textY: 0.5,
-            masterOpacity: 100
+            masterOpacity: 100,
+            subtitleSpacing: 4 // Normal spacing (2px=less, 4px=normal, 6px=more)
         };
         // Load fonts
         function loadGoogleFonts() {
@@ -849,16 +839,6 @@
         if (savedBoundingBoxes !== null) {
             globalSettings.showBoundingBoxes = savedBoundingBoxes === 'true';
             showBoundingBoxes.checked = globalSettings.showBoundingBoxes;
-        }
-
-        // Load saved subtitle spacing from localStorage
-        const savedSpacing = localStorage.getItem('subtitleSpacing');
-        if (savedSpacing !== null) {
-            const spacing = parseInt(savedSpacing);
-            globalSettings.subtitleSpacing = spacing;
-            subtitleSpacingSlider.value = spacing;
-            spacingValue.textContent = `${spacing}px`;
-            updateSpacingButtons(spacing);
         }
 
         // Function to calculate optimal font size for 65% canvas width
@@ -1039,55 +1019,6 @@
             updateAllPreviews();
         });
 
-        // Subtitle spacing controls
-        const subtitleSpacingSlider = document.getElementById('subtitleSpacingSlider');
-        const spacingValue = document.getElementById('spacingValue');
-        const spacingLess = document.getElementById('spacingLess');
-        const spacingNormal = document.getElementById('spacingNormal');
-        const spacingMore = document.getElementById('spacingMore');
-
-        function updateSpacingButtons(value) {
-            spacingLess.style.background = value === 15 ? '#0088ff' : '#444';
-            spacingNormal.style.background = value === 30 ? '#0088ff' : '#444';
-            spacingMore.style.background = value === 50 ? '#0088ff' : '#444';
-        }
-
-        subtitleSpacingSlider.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            globalSettings.subtitleSpacing = value;
-            spacingValue.textContent = `${value}px`;
-            updateSpacingButtons(value);
-            localStorage.setItem('subtitleSpacing', value);
-            updateAllPreviews();
-        });
-
-        spacingLess.addEventListener('click', () => {
-            subtitleSpacingSlider.value = 15;
-            globalSettings.subtitleSpacing = 15;
-            spacingValue.textContent = '15px';
-            updateSpacingButtons(15);
-            localStorage.setItem('subtitleSpacing', 15);
-            updateAllPreviews();
-        });
-
-        spacingNormal.addEventListener('click', () => {
-            subtitleSpacingSlider.value = 30;
-            globalSettings.subtitleSpacing = 30;
-            spacingValue.textContent = '30px';
-            updateSpacingButtons(30);
-            localStorage.setItem('subtitleSpacing', 30);
-            updateAllPreviews();
-        });
-
-        spacingMore.addEventListener('click', () => {
-            subtitleSpacingSlider.value = 50;
-            globalSettings.subtitleSpacing = 50;
-            spacingValue.textContent = '50px';
-            updateSpacingButtons(50);
-            localStorage.setItem('subtitleSpacing', 50);
-            updateAllPreviews();
-        });
-
         // Keyboard controls for fine-tuning
         let keyboardMovedMaster = false; // Track if master was moved during keydown
         
@@ -1135,7 +1066,8 @@
                             letterSpacing: focusedPreview.letterSpacing,
                             textX: focusedPreview.textX,
                             textY: focusedPreview.textY,
-                            masterOpacity: focusedPreview.masterOpacity
+                            masterOpacity: focusedPreview.masterOpacity,
+                            subtitleSpacing: focusedPreview.subtitleSpacing
                         };
                     }
                     fontCustomizations[focusedPreview.font].textX = focusedPreview.textX;
@@ -1234,7 +1166,8 @@
                 letterSpacing: 0,
                 textX: 0.5,
                 textY: 0.5,
-                masterOpacity: 100
+                masterOpacity: 100,
+                subtitleSpacing: 4
             };
         });
         relinkBtn.addEventListener('click', () => {
@@ -1300,7 +1233,8 @@
                 letterSpacing: masterTemplate.letterSpacing,
                 textX: masterTemplate.textX,
                 textY: masterTemplate.textY,
-                masterOpacity: masterTemplate.masterOpacity
+                masterOpacity: masterTemplate.masterOpacity,
+                subtitleSpacing: masterTemplate.subtitleSpacing
             }];
             // Add all fonts
             previews = previews.concat(sortedFonts.map(font => {
@@ -1314,7 +1248,8 @@
                         letterSpacing: custom.letterSpacing,
                         textX: custom.textX,
                         textY: custom.textY,
-                        masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity
+                        masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
+                        subtitleSpacing: custom.subtitleSpacing !== undefined ? custom.subtitleSpacing : masterTemplate.subtitleSpacing
                     };
                 } else {
                     return {
@@ -1324,7 +1259,8 @@
                         letterSpacing: masterTemplate.letterSpacing,
                         textX: masterTemplate.textX,
                         textY: masterTemplate.textY,
-                        masterOpacity: masterTemplate.masterOpacity
+                        masterOpacity: masterTemplate.masterOpacity,
+                        subtitleSpacing: masterTemplate.subtitleSpacing
                     };
                 }
             }));
@@ -1350,7 +1286,8 @@
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
                         textY: custom ? custom.textY : masterTemplate.textY,
-                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
+                        subtitleSpacing: custom ? (custom.subtitleSpacing !== undefined ? custom.subtitleSpacing : masterTemplate.subtitleSpacing) : masterTemplate.subtitleSpacing
                     };
 
                     const card = createPreviewCard(preview, font); // Use font name as identifier
@@ -1564,6 +1501,7 @@
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
                     preview.masterOpacity = masterTemplate.masterOpacity;
+                    preview.subtitleSpacing = masterTemplate.subtitleSpacing;
 
                     // Redraw canvas
                     drawCanvas(canvas, preview);
@@ -1749,7 +1687,120 @@
             masterOpacityGroup.appendChild(masterOpacityLabel);
             masterOpacityGroup.appendChild(masterOpacitySlider);
 
+            // Subtitle Spacing with presets
+            const spacingGroup = document.createElement('div');
+            spacingGroup.style.width = '100%';
+            spacingGroup.style.marginTop = '10px';
+
+            const spacingPresets = document.createElement('div');
+            spacingPresets.style.display = 'flex';
+            spacingPresets.style.gap = '5px';
+            spacingPresets.style.marginBottom = '5px';
+
+            const btnLess = document.createElement('button');
+            btnLess.textContent = 'Less';
+            btnLess.style.cssText = 'flex: 1; padding: 4px; background: #444; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;';
+
+            const btnNormal = document.createElement('button');
+            btnNormal.textContent = 'Normal';
+            btnNormal.style.cssText = 'flex: 1; padding: 4px; background: #444; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;';
+
+            const btnMore = document.createElement('button');
+            btnMore.textContent = 'More';
+            btnMore.style.cssText = 'flex: 1; padding: 4px; background: #444; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;';
+
+            function updateSpacingButtons(value) {
+                btnLess.style.background = value === 2 ? '#0088ff' : '#444';
+                btnNormal.style.background = value === 4 ? '#0088ff' : '#444';
+                btnMore.style.background = value === 6 ? '#0088ff' : '#444';
+            }
+            updateSpacingButtons(preview.subtitleSpacing);
+
+            btnLess.addEventListener('click', () => {
+                const newSpacing = 2;
+                if (preview.isMaster) {
+                    masterTemplate.subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateNonCustomizedPreviews();
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            subtitleSpacing: preview.subtitleSpacing
+                        };
+                    }
+                    fontCustomizations[preview.font].subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+                updateSpacingButtons(newSpacing);
+            });
+
+            btnNormal.addEventListener('click', () => {
+                const newSpacing = 4;
+                if (preview.isMaster) {
+                    masterTemplate.subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateNonCustomizedPreviews();
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            subtitleSpacing: preview.subtitleSpacing
+                        };
+                    }
+                    fontCustomizations[preview.font].subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+                updateSpacingButtons(newSpacing);
+            });
+
+            btnMore.addEventListener('click', () => {
+                const newSpacing = 6;
+                if (preview.isMaster) {
+                    masterTemplate.subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateNonCustomizedPreviews();
+                } else {
+                    if (!fontCustomizations[preview.font]) {
+                        fontCustomizations[preview.font] = {
+                            fontSize: preview.fontSize,
+                            letterSpacing: preview.letterSpacing,
+                            textX: preview.textX,
+                            textY: preview.textY,
+                            masterOpacity: preview.masterOpacity,
+                            subtitleSpacing: preview.subtitleSpacing
+                        };
+                    }
+                    fontCustomizations[preview.font].subtitleSpacing = newSpacing;
+                    preview.subtitleSpacing = newSpacing;
+                    drawCanvas(canvas, preview);
+                    updateLinkedFont(preview.font);
+                }
+                updateSpacingButtons(newSpacing);
+            });
+
+            spacingPresets.appendChild(btnLess);
+            spacingPresets.appendChild(btnNormal);
+            spacingPresets.appendChild(btnMore);
+            spacingGroup.appendChild(spacingPresets);
+
             controlsRow3.appendChild(masterOpacityGroup);
+            controlsRow3.appendChild(spacingGroup);
             card.appendChild(controlsRow3);
 
             return card;
@@ -1771,6 +1822,7 @@
                     previews[previewIndex].textX = custom.textX;
                     previews[previewIndex].textY = custom.textY;
                     previews[previewIndex].masterOpacity = custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity;
+                    previews[previewIndex].subtitleSpacing = custom.subtitleSpacing !== undefined ? custom.subtitleSpacing : masterTemplate.subtitleSpacing;
                     drawCanvas(mainCanvas, previews[previewIndex]);
 
                     // Update sliders
@@ -1799,7 +1851,8 @@
                     letterSpacing: custom.letterSpacing,
                     textX: custom.textX,
                     textY: custom.textY,
-                    masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity
+                    masterOpacity: custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity,
+                    subtitleSpacing: custom.subtitleSpacing !== undefined ? custom.subtitleSpacing : masterTemplate.subtitleSpacing
                 };
                 drawCanvas(favCanvas, favPreview);
 
@@ -1839,6 +1892,7 @@
                     preview.textX = masterTemplate.textX;
                     preview.textY = masterTemplate.textY;
                     preview.masterOpacity = masterTemplate.masterOpacity;
+                    preview.subtitleSpacing = masterTemplate.subtitleSpacing;
 
                     const canvas = previewsGrid.querySelectorAll('canvas')[index];
                     if (canvas) {
@@ -1867,7 +1921,8 @@
                             letterSpacing: masterTemplate.letterSpacing,
                             textX: masterTemplate.textX,
                             textY: masterTemplate.textY,
-                            masterOpacity: masterTemplate.masterOpacity
+                            masterOpacity: masterTemplate.masterOpacity,
+                            subtitleSpacing: masterTemplate.subtitleSpacing
                         };
                         drawCanvas(canvas, favPreview);
                         updateCardSliders(card, masterTemplate);
@@ -2006,7 +2061,7 @@
 
                     // Draw dividing line between main title and subtitle (if enabled)
                     if (globalSettings.showDividingLine) {
-                        const spacing = globalSettings.subtitleSpacing * scaleFactor;
+                        const spacing = preview.subtitleSpacing * scaleFactor;
                         // Position line in the center of the spacing
                         const lineY = y + (scaledFontSize / 2) + (spacing / 2);
                         const lineWidth = mainTextWidth;
@@ -2034,8 +2089,8 @@
                         subtitleLetterSpacing = (targetSubtitleWidth - subtitleBaseWidth) / (subtitleChars.length - 1);
                     }
 
-                    // Position subtitle with spacing from global settings
-                    const subtitleY = y + (scaledFontSize / 2) + (globalSettings.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
+                    // Position subtitle with spacing from preview settings
+                    const subtitleY = y + (scaledFontSize / 2) + (preview.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
 
                     // Apply dual shadow system for subtitle
                     if (globalSettings.effect === 'shadow') {
@@ -2212,7 +2267,7 @@
                         const subAscent = subMetrics.actualBoundingBoxAscent;
                         const subDescent = subMetrics.actualBoundingBoxDescent;
 
-                        const subtitleY = y + (scaledFontSize / 2) + (globalSettings.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
+                        const subtitleY = y + (scaledFontSize / 2) + (preview.subtitleSpacing * scaleFactor) + (subtitleFontSize / 2);
 
                         const subtitleBoxX = x - targetSubtitleWidth / 2;
                         const subtitleBoxY = subtitleY - subAscent;
@@ -2246,7 +2301,8 @@
                         letterSpacing: custom ? custom.letterSpacing : masterTemplate.letterSpacing,
                         textX: custom ? custom.textX : masterTemplate.textX,
                         textY: custom ? custom.textY : masterTemplate.textY,
-                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity
+                        masterOpacity: custom ? (custom.masterOpacity !== undefined ? custom.masterOpacity : masterTemplate.masterOpacity) : masterTemplate.masterOpacity,
+                        subtitleSpacing: custom ? (custom.subtitleSpacing !== undefined ? custom.subtitleSpacing : masterTemplate.subtitleSpacing) : masterTemplate.subtitleSpacing
                     };
                     drawCanvas(canvas, favPreview);
                 }
