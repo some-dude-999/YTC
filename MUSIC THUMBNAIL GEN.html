@@ -278,7 +278,10 @@
             <div class="input-group">
                 <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                     <span>Font Categories</span>
-                    <button class="btn" id="selectAllCategories" style="background: #0088ff; color: white; padding: 6px 12px;">Select All</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn" id="selectAllCategories" style="background: #0088ff; color: white; padding: 6px 12px;">Select All</button>
+                        <button class="btn" id="selectNoneCategories" style="background: #ff4444; color: white; padding: 6px 12px;">None</button>
+                    </div>
                 </label>
                 <div id="categoryCheckboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding: 10px; background: #333; border-radius: 5px;">
                     <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
@@ -365,6 +368,10 @@
                         <input type="checkbox" class="category-checkbox" value="pirate" checked style="cursor: pointer;">
                         <span>🏴‍☠️ Pirate</span>
                     </label>
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" class="category-checkbox" value="allcaps" checked style="cursor: pointer;">
+                        <span>🔠 All Caps</span>
+                    </label>
                 </div>
             </div>
             <div class="input-group">
@@ -426,6 +433,23 @@
                         <input type="checkbox" id="showDividingLine" checked style="cursor: pointer;">
                         <span>Show Dividing Line</span>
                     </label>
+                </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px;">Opacity Controls:</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Master Opacity: <span id="masterOpacityValue">100</span>%</label>
+                            <input type="range" id="masterOpacity" min="0" max="100" value="100" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Top Fade: <span id="topFadeValue">0</span>%</label>
+                            <input type="range" id="topFade" min="0" max="100" value="0" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 3px;">Bottom Fade: <span id="bottomFadeValue">0</span>%</label>
+                            <input type="range" id="bottomFade" min="0" max="100" value="0" style="width: 100%;">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="dropZoneContainer">
@@ -667,6 +691,16 @@
                 'Overlock', // Pirate only
                 'Bowlby One', // Pirate only
                 'Bowlby One SC' // Pirate only
+            ],
+            allcaps: [
+                // Fonts that are naturally all caps
+                // Collections: allcaps
+                'Bebas Neue', 'Anton', 'Oswald', 'Archivo Black', 'Barlow Condensed',
+                'Pathway Gothic One', 'Fjalla One', 'Yanone Kaffeesatz', 'Teko', 'Saira Condensed',
+                'Staatliches', 'Squada One', 'Black Ops One', 'Audiowide', 'Syncopate',
+                'Michroma', 'Monoton', 'Rajdhani', 'Share Tech', 'Quantico',
+                'Aldrich', 'Strait', 'Iceberg', 'Turret Road', 'Faster One',
+                'Bowlby One SC', 'Macondo Swash Caps'
             ]
         };
         // Generate "all" category with all unique fonts
@@ -698,7 +732,10 @@
             textTransform: 'none',
             subtitle: 'Sleep Music', // Default subtitle
             showBrainIcons: true, // Show rocket and rainbow icons
-            showDividingLine: true // Show dividing line between title and subtitle
+            showDividingLine: true, // Show dividing line between title and subtitle
+            masterOpacity: 100, // Master opacity (0-100)
+            topFade: 0, // Top fade (0-100, 0 = no fade, 100 = fully transparent at top)
+            bottomFade: 0 // Bottom fade (0-100, 0 = no fade, 100 = fully transparent at bottom)
         };
         // Master template settings (from Arial mockup)
         let masterTemplate = {
@@ -749,6 +786,7 @@
         const textInput = document.getElementById('textInput');
         const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
         const selectAllCategoriesBtn = document.getElementById('selectAllCategories');
+        const selectNoneCategoriesBtn = document.getElementById('selectNoneCategories');
         const dropZone = document.getElementById('dropZone');
         const dropZoneContainer = document.getElementById('dropZoneContainer');
         const changeImageBtn = document.getElementById('changeImageBtn');
@@ -772,6 +810,12 @@
         const transformTitle = document.getElementById('transformTitle');
         const showBrainIcons = document.getElementById('showBrainIcons');
         const showDividingLine = document.getElementById('showDividingLine');
+        const masterOpacitySlider = document.getElementById('masterOpacity');
+        const masterOpacityValue = document.getElementById('masterOpacityValue');
+        const topFadeSlider = document.getElementById('topFade');
+        const topFadeValue = document.getElementById('topFadeValue');
+        const bottomFadeSlider = document.getElementById('bottomFade');
+        const bottomFadeValue = document.getElementById('bottomFadeValue');
 
         // Load saved subtitle from localStorage
         const savedSubtitle = localStorage.getItem('thumbnailSubtitle');
@@ -847,6 +891,21 @@
                 generatePreviews();
             }
         });
+
+        // Select None Categories button
+        selectNoneCategoriesBtn.addEventListener('click', () => {
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                selectedCategories.delete(checkbox.value);
+            });
+
+            if (currentImage) {
+                focusedCanvas = null;
+                focusedPreview = null;
+                displayLimit = 40;
+                generatePreviews();
+            }
+        });
         showMoreBtn.addEventListener('click', () => {
             displayLimit += 40;
             generatePreviews();
@@ -901,6 +960,21 @@
         showDividingLine.addEventListener('change', (e) => {
             globalSettings.showDividingLine = e.target.checked;
             localStorage.setItem('showDividingLine', e.target.checked);
+            updateAllPreviews();
+        });
+        masterOpacitySlider.addEventListener('input', (e) => {
+            globalSettings.masterOpacity = parseInt(e.target.value);
+            masterOpacityValue.textContent = e.target.value;
+            updateAllPreviews();
+        });
+        topFadeSlider.addEventListener('input', (e) => {
+            globalSettings.topFade = parseInt(e.target.value);
+            topFadeValue.textContent = e.target.value;
+            updateAllPreviews();
+        });
+        bottomFadeSlider.addEventListener('input', (e) => {
+            globalSettings.bottomFade = parseInt(e.target.value);
+            bottomFadeValue.textContent = e.target.value;
             updateAllPreviews();
         });
         // Keyboard controls for fine-tuning
@@ -1041,8 +1115,17 @@
                 textTransform: 'none',
                 subtitle: 'Sleep Music',
                 showBrainIcons: true,
-                showDividingLine: true
+                showDividingLine: true,
+                masterOpacity: 100,
+                topFade: 0,
+                bottomFade: 0
             };
+            masterOpacitySlider.value = 100;
+            masterOpacityValue.textContent = '100';
+            topFadeSlider.value = 0;
+            topFadeValue.textContent = '0';
+            bottomFadeSlider.value = 0;
+            bottomFadeValue.textContent = '0';
             masterTemplate = {
                 fontSize: 80,
                 letterSpacing: 0,
@@ -1335,10 +1418,10 @@
                 const fullCanvas = document.createElement('canvas');
                 fullCanvas.width = FULL_WIDTH;
                 fullCanvas.height = FULL_HEIGHT;
-                
+
                 // Draw at full resolution
                 drawCanvas(fullCanvas, preview);
-                
+
                 // Download
                 fullCanvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
@@ -1350,6 +1433,48 @@
                 }, 'image/png');
             });
             controlsRow1.appendChild(downloadBtn);
+
+            // Add reset button (not for master template)
+            if (!preview.isMaster) {
+                const resetFontBtn = document.createElement('button');
+                resetFontBtn.className = 'btn';
+                resetFontBtn.style.background = '#666';
+                resetFontBtn.style.color = 'white';
+                resetFontBtn.textContent = 'Reset';
+                resetFontBtn.addEventListener('click', () => {
+                    // Remove customization for this font
+                    delete fontCustomizations[preview.font];
+
+                    // Reset preview to master template settings
+                    preview.fontSize = masterTemplate.fontSize;
+                    preview.letterSpacing = masterTemplate.letterSpacing;
+                    preview.textX = masterTemplate.textX;
+                    preview.textY = masterTemplate.textY;
+
+                    // Redraw canvas
+                    drawCanvas(canvas, preview);
+
+                    // Update sliders
+                    const sizeSlider = card.querySelector('input[type="range"][min="20"]');
+                    const spacingSlider = card.querySelector('input[type="range"][min="-10"]');
+                    const sizeLabel = card.querySelector('.slider-group:first-child label');
+                    const spacingLabel = card.querySelector('.slider-group:last-child label');
+
+                    if (sizeSlider) {
+                        sizeSlider.value = masterTemplate.fontSize;
+                        sizeLabel.textContent = `Size: ${masterTemplate.fontSize}px`;
+                    }
+                    if (spacingSlider) {
+                        spacingSlider.value = masterTemplate.letterSpacing;
+                        spacingLabel.textContent = `Char Spacing: ${masterTemplate.letterSpacing}px`;
+                    }
+
+                    // Update linked font if in favorites
+                    updateLinkedFont(preview.font);
+                });
+                controlsRow1.appendChild(resetFontBtn);
+            }
+
             card.appendChild(controlsRow1);
             // Controls row 2
             const controlsRow2 = document.createElement('div');
@@ -1579,10 +1704,14 @@
                 offsetY = (canvasHeight - drawHeight) / 2;
             }
             ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
+
+            // Apply master opacity
+            ctx.globalAlpha = globalSettings.masterOpacity / 100;
+
             // Draw text
             let text = textInput.value;
             text = applyTextTransform(text, globalSettings.textTransform);
-            
+
             if (text) {
                 // Scale font size based on canvas resolution
                 const scaleFactor = canvasWidth / FULL_WIDTH;
@@ -1597,10 +1726,10 @@
                 const y = canvasHeight * preview.textY;
                 // Apply effects using global settings
                 if (globalSettings.effect === 'shadow') {
-                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
-                    ctx.shadowBlur = 15 * scaleFactor;
-                    ctx.shadowOffsetX = 5 * scaleFactor;
-                    ctx.shadowOffsetY = 5 * scaleFactor;
+                    ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                    ctx.shadowBlur = 25 * scaleFactor;
+                    ctx.shadowOffsetX = 8 * scaleFactor;
+                    ctx.shadowOffsetY = 8 * scaleFactor;
                 } else if (globalSettings.effect === 'glow') {
                     ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                     ctx.shadowBlur = 20 * scaleFactor;
@@ -1671,10 +1800,10 @@
 
                     // Apply same effects as main text
                     if (globalSettings.effect === 'shadow') {
-                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
-                        ctx.shadowBlur = 15 * scaleFactor;
-                        ctx.shadowOffsetX = 5 * scaleFactor;
-                        ctx.shadowOffsetY = 5 * scaleFactor;
+                        ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        ctx.shadowBlur = 25 * scaleFactor;
+                        ctx.shadowOffsetX = 8 * scaleFactor;
+                        ctx.shadowOffsetY = 8 * scaleFactor;
                     } else if (globalSettings.effect === 'glow') {
                         ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                         ctx.shadowBlur = 20 * scaleFactor;
@@ -1709,10 +1838,10 @@
 
                         // Apply same effects as main text
                         if (globalSettings.effect === 'shadow') {
-                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
-                            ctx.shadowBlur = 15 * scaleFactor;
-                            ctx.shadowOffsetX = 5 * scaleFactor;
-                            ctx.shadowOffsetY = 5 * scaleFactor;
+                            ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                            ctx.shadowBlur = 25 * scaleFactor;
+                            ctx.shadowOffsetX = 8 * scaleFactor;
+                            ctx.shadowOffsetY = 8 * scaleFactor;
                         } else if (globalSettings.effect === 'glow') {
                             ctx.shadowColor = globalSettings.textColor === 'white' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
                             ctx.shadowBlur = 20 * scaleFactor;
@@ -1734,7 +1863,40 @@
                 ctx.shadowBlur = 0;
                 ctx.shadowOffsetX = 0;
                 ctx.shadowOffsetY = 0;
+
+                // Apply gradient fades if enabled
+                if (globalSettings.topFade > 0 || globalSettings.bottomFade > 0) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-in';
+
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+
+                    // Top fade
+                    if (globalSettings.topFade > 0) {
+                        const topFadePercent = globalSettings.topFade / 100;
+                        gradient.addColorStop(0, `rgba(255, 255, 255, ${1 - topFadePercent})`);
+                        gradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
+                    } else {
+                        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    }
+
+                    // Bottom fade
+                    if (globalSettings.bottomFade > 0) {
+                        const bottomFadePercent = globalSettings.bottomFade / 100;
+                        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1)');
+                        gradient.addColorStop(1, `rgba(255, 255, 255, ${1 - bottomFadePercent})`);
+                    } else {
+                        gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                    }
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                    ctx.restore();
+                }
             }
+
+            // Reset global alpha
+            ctx.globalAlpha = 1;
         }
         function updateAllPreviews() {
             const canvases = previewsGrid.querySelectorAll('canvas');
