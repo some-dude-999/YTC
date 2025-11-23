@@ -820,8 +820,43 @@
             showDividingLine.checked = globalSettings.showDividingLine;
         }
 
+        // Function to calculate optimal font size for 65% canvas width
+        function calculateOptimalFontSize() {
+            if (!currentImage || !textInput.value) return;
+
+            const text = applyTextTransform(textInput.value, globalSettings.textTransform);
+            const targetWidthPercent = 0.65; // 65% of canvas width
+            const targetWidth = FULL_WIDTH * targetWidthPercent;
+
+            // Create temporary canvas to measure text
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Start with a base font size
+            let testFontSize = 100;
+            tempCtx.font = `${testFontSize}px "Arial"`;
+            const baseWidth = tempCtx.measureText(text).width;
+
+            // Calculate the scaling factor needed
+            const scalingFactor = targetWidth / baseWidth;
+            const optimalFontSize = Math.round(testFontSize * scalingFactor);
+
+            // Update master template
+            masterTemplate.fontSize = optimalFontSize;
+
+            // Update all non-customized previews
+            previews.forEach((preview, index) => {
+                if (!preview.isMaster && !fontCustomizations[preview.font]) {
+                    preview.fontSize = optimalFontSize;
+                }
+            });
+        }
+
         // Event listeners
-        textInput.addEventListener('keyup', updateAllPreviews);
+        textInput.addEventListener('keyup', () => {
+            calculateOptimalFontSize();
+            updateAllPreviews();
+        });
 
         // Add subtitle radio button listeners
         document.querySelectorAll('input[name="subtitle"]').forEach(radio => {
@@ -915,18 +950,22 @@
         });
         transformNone.addEventListener('change', () => {
             globalSettings.textTransform = 'none';
+            calculateOptimalFontSize();
             updateAllPreviews();
         });
         transformUpper.addEventListener('change', () => {
             globalSettings.textTransform = 'uppercase';
+            calculateOptimalFontSize();
             updateAllPreviews();
         });
         transformLower.addEventListener('change', () => {
             globalSettings.textTransform = 'lowercase';
+            calculateOptimalFontSize();
             updateAllPreviews();
         });
         transformTitle.addEventListener('change', () => {
             globalSettings.textTransform = 'titlecase';
+            calculateOptimalFontSize();
             updateAllPreviews();
         });
         showBrainIcons.addEventListener('change', (e) => {
@@ -1114,6 +1153,7 @@
                         changeImageBtn.classList.remove('hidden');
                         resetBtn.classList.remove('hidden');
                         relinkBtn.classList.remove('hidden');
+                        calculateOptimalFontSize();
                         generatePreviews();
                     };
                     img.src = e.target.result;
