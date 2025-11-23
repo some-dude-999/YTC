@@ -147,11 +147,15 @@ CORRECTIONS & CLARIFICATIONS:
 - Why this matters: Users can mix master-linked and custom fonts
 
 RECENT FIXES (2025-11-23):
+- CRITICAL: Fixed duplicate spacingGroup variable declaration (SyntaxError on line 1714)
+  * Renamed second spacingGroup to subtitleSpacingGroup
+  * This error prevented the entire script from executing
+  * Image upload wasn't working because event listeners were never attached
 - Fixed image upload click handler with event.stopPropagation() to prevent event bubbling
 - Added comprehensive console logging for debugging upload issues
 - Added defensive checks to ensure DOM elements exist before attaching event listeners
 - Added error handlers for FileReader and Image loading failures
-- Why this matters: Improves reliability of file upload on different browsers and helps debug issues
+- Why this matters: The duplicate variable was a critical bug that broke all functionality; proper event handling improves reliability across browsers
 
 NOTES:
 - Font categories designed for music genres (EDM, hip-hop, lo-fi, etc.)
